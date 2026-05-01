@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neural.Todo — Intelligent Task Engine</title>
+<title>Smart Todo — Intelligent Task Engine</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -18,6 +18,7 @@
   --green: #10b981;
   --amber: #f59e0b;
   --red: #ef4444;
+  --orange: #f97316;
   --text: #f1f5f9;
   --muted: #475569;
   --muted2: #64748b;
@@ -48,7 +49,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 
 /* ── HEADER ── */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border);}
-.logo-block{}
 .logo{font-family:var(--font-sans);font-weight:900;font-size:28px;letter-spacing:-1px;
   background:linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -67,15 +67,16 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 .nlp-strip::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));opacity:0.7;}
 .nlp-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:2px;margin-bottom:12px;}
-.nlp-row{display:flex;gap:12px;align-items:center;}
+.nlp-row{display:flex;gap:12px;align-items:flex-start;}
 .nlp-input{flex:1;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:var(--r-sm);
-  padding:14px 18px;color:var(--text);font-family:var(--font-sans);font-size:15px;outline:none;transition:all .3s;}
+  padding:14px 18px;color:var(--text);font-family:var(--font-sans);font-size:15px;outline:none;transition:all .3s;
+  min-height:52px;resize:none;line-height:1.5;}
 .nlp-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);}
 .nlp-input::placeholder{color:var(--muted);}
 .nlp-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
   padding:14px 24px;border-radius:var(--r-sm);font-weight:800;cursor:pointer;
   font-family:var(--font-sans);font-size:15px;transition:all .3s;white-space:nowrap;
-  box-shadow:0 4px 20px rgba(124,92,252,0.4);}
+  box-shadow:0 4px 20px rgba(124,92,252,0.4);min-height:52px;}
 .nlp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,92,252,0.5);}
 .nlp-btn:active{transform:translateY(0);}
 .nlp-hint{font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--font-mono);}
@@ -90,6 +91,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 .panel-title{font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;}
 .count-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;
   padding:2px 8px;border-radius:50px;font-family:var(--font-mono);}
+.count-badge.red{background:var(--red);}
 .panel-tools{display:flex;gap:8px;}
 .icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted2);
   width:32px;height:32px;border-radius:8px;cursor:pointer;display:grid;place-items:center;
@@ -101,13 +103,21 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
   padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
 .filter-chip:hover,.filter-chip.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
 
-.task-list{padding:0;max-height:580px;overflow-y:auto;}
+.task-list{padding:0;max-height:480px;overflow-y:auto;}
 .task-list::-webkit-scrollbar{width:4px;}
 .task-list::-webkit-scrollbar-track{background:transparent;}
 .task-list::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
 .empty-state{padding:60px 24px;text-align:center;color:var(--muted);}
 .empty-icon{font-size:48px;margin-bottom:16px;opacity:0.4;}
 .empty-text{font-size:14px;line-height:1.7;}
+
+/* ── MISSED SECTION ── */
+.missed-section{border-top:1px solid rgba(239,68,68,0.2);}
+.missed-header{padding:12px 20px;background:rgba(239,68,68,0.05);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .2s;}
+.missed-header:hover{background:rgba(239,68,68,0.08);}
+.missed-title{font-size:12px;font-family:var(--font-mono);color:var(--red);letter-spacing:1.5px;display:flex;align-items:center;gap:8px;}
+.missed-list{padding:0;max-height:300px;overflow-y:auto;display:none;}
+.missed-list.open{display:block;}
 
 /* ── TASK ITEM ── */
 .task-item{padding:16px 20px;border-bottom:1px solid var(--border);
@@ -116,8 +126,8 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 .task-item:hover{background:rgba(255,255,255,0.02);}
 .task-item:hover::before{opacity:1;}
 .task-item:last-child{border-bottom:none;}
-.task-item.done{opacity:0.4;}
-.task-item.done .task-title{text-decoration:line-through;}
+.task-item.missed::before{background:var(--red);opacity:0.6;}
+.task-item.missed .task-title{color:rgba(241,245,249,0.7);}
 
 .check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);
   cursor:pointer;display:grid;place-items:center;transition:all .3s;flex-shrink:0;margin-top:2px;}
@@ -132,9 +142,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
   background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted2);}
 .meta-chip.cat{border-color:rgba(124,92,252,0.3);color:var(--accent);}
 .meta-chip.date{border-color:rgba(6,182,212,0.3);color:var(--accent3);}
-.meta-chip.loc{border-color:rgba(16,185,129,0.3);color:var(--green);}
+.meta-chip.loc{border-color:rgba(16,185,129,0.3);color:var(--green);cursor:pointer;text-decoration:none;}
+.meta-chip.loc:hover{background:rgba(16,185,129,0.1);}
 .meta-chip.urgent{border-color:rgba(239,68,68,0.4);color:var(--red);background:rgba(239,68,68,0.08);}
 .meta-chip.soon{border-color:rgba(245,158,11,0.4);color:var(--amber);background:rgba(245,158,11,0.08);}
+.meta-chip.missed-chip{border-color:rgba(239,68,68,0.5);color:var(--red);background:rgba(239,68,68,0.1);}
 
 .task-actions{display:flex;gap:6px;flex-shrink:0;opacity:0;transition:opacity .2s;}
 .task-item:hover .task-actions{opacity:1;}
@@ -146,13 +158,46 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 /* ── RIGHT PANEL ── */
 .right-col{display:flex;flex-direction:column;gap:20px;}
 
-/* ── MANUAL FORM ── */
-.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.form-panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-.form-panel-title{font-weight:800;font-size:14px;}
-.form-body{padding:20px;display:none;flex-direction:column;gap:14px;}
-.form-body.open{display:flex;}
+/* ── STATS PANEL ── */
+.stats-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.stats-title{font-size:12px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;margin-bottom:14px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.stat-val{font-size:28px;font-weight:900;font-family:var(--font-mono);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+.stat-box.accent{border-color:rgba(124,92,252,0.3);}
+.stat-box.accent .stat-val{color:var(--accent);}
+.stat-box.green .stat-val{color:var(--green);}
+.stat-box.amber .stat-val{color:var(--amber);}
+.stat-box.cyan .stat-val{color:var(--accent3);}
+.stat-box.red-box{border-color:rgba(239,68,68,0.3);}
+.stat-box.red-box .stat-val{color:var(--red);}
 
+/* ── ADD TASK BUTTON ── */
+.add-task-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+  padding:14px 20px;border-radius:var(--r-sm);font-weight:800;cursor:pointer;
+  font-family:var(--font-sans);font-size:14px;transition:all .3s;width:100%;
+  box-shadow:0 4px 16px rgba(124,92,252,0.35);display:flex;align-items:center;justify-content:center;gap:8px;}
+.add-task-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.5);}
+
+/* ── MODAL OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface2);border:1px solid var(--border-bright);border-radius:24px;
+  width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;
+  animation:modalIn .3s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.modal-title{font-weight:800;font-size:16px;}
+.modal-close{background:transparent;border:1px solid var(--border);color:var(--muted);
+  width:30px;height:30px;border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:16px;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1;}
+.modal-body::-webkit-scrollbar{width:4px;}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+
+/* ── FORM FIELDS ── */
 .field-group{display:flex;flex-direction:column;gap:6px;}
 .field-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;}
 .field-input{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;
@@ -161,7 +206,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--f
 .field-input::placeholder{color:var(--muted);}
 select.field-input option{background:#1a1a2e;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.form-stack{display:flex;flex-direction:column;gap:14px;}
 
 .time-mode-tabs{display:flex;gap:4px;background:rgba(0,0,0,0.3);border-radius:10px;padding:4px;}
 .time-tab{flex:1;padding:7px;border:none;background:transparent;color:var(--muted);
@@ -186,40 +231,15 @@ select.field-input option{background:#1a1a2e;}
   border-radius:50%;transition:all .3s;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
 .toggle input:checked~.toggle-thumb{left:20px;}
 
+.reminder-offsets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.offset-chip{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted2);
+  padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.offset-chip.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
+
 .submit-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
   padding:13px;border-radius:12px;font-weight:800;cursor:pointer;font-family:var(--font-sans);
   font-size:14px;width:100%;transition:all .3s;box-shadow:0 4px 16px rgba(124,92,252,0.35);}
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.5);}
-
-/* ── STATS PANEL ── */
-.stats-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
-.stats-title{font-size:12px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;margin-bottom:14px;}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.stat-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:14px;}
-.stat-val{font-size:28px;font-weight:900;font-family:var(--font-mono);}
-.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
-.stat-box.accent{border-color:rgba(124,92,252,0.3);}
-.stat-box.accent .stat-val{color:var(--accent);}
-.stat-box.green .stat-val{color:var(--green);}
-.stat-box.amber .stat-val{color:var(--amber);}
-.stat-box.cyan .stat-val{color:var(--accent3);}
-
-/* ── MODALS ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
-  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
-.overlay.open{display:flex;}
-.modal{background:var(--surface2);border:1px solid var(--border-bright);border-radius:24px;
-  width:100%;max-width:560px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;
-  animation:modalIn .3s cubic-bezier(0.34,1.56,0.64,1);}
-@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
-.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-.modal-title{font-weight:800;font-size:16px;}
-.modal-close{background:transparent;border:1px solid var(--border);color:var(--muted);
-  width:30px;height:30px;border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:16px;}
-.modal-close:hover{border-color:var(--red);color:var(--red);}
-.modal-body{padding:20px 24px;overflow-y:auto;flex:1;}
-.modal-body::-webkit-scrollbar{width:4px;}
-.modal-body::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
 
 /* ── HISTORY ITEMS ── */
 .history-item{display:flex;align-items:center;gap:12px;padding:12px;
@@ -234,7 +254,7 @@ select.field-input option{background:#1a1a2e;}
   padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font-sans);}
 .restore-btn:hover{background:rgba(16,185,129,0.2);}
 
-/* ── EDIT MODAL ── */
+/* ── EDIT MODAL FIELDS ── */
 .edit-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
 .edit-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;}
 
@@ -245,10 +265,21 @@ select.field-input option{background:#1a1a2e;}
   background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
 .notif-opt-lbl{font-size:13px;font-weight:600;}
 .notif-opt-sub{font-size:11px;color:var(--muted);}
-.reminder-offsets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-.offset-chip{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted2);
-  padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
-.offset-chip.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
+
+/* ── PERSISTENT VIBRATE ALERT ── */
+.vibrate-alert{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);border-radius:16px;
+  padding:14px 20px;display:none;align-items:center;gap:12px;z-index:2001;
+  backdrop-filter:blur(12px);min-width:320px;max-width:90vw;
+  animation:alertPulse 1s ease-in-out infinite;}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4);}50%{box-shadow:0 0 0 10px rgba(239,68,68,0);}}
+.vibrate-alert.show{display:flex;}
+.vibrate-alert-icon{font-size:24px;flex-shrink:0;}
+.vibrate-alert-body{flex:1;}
+.vibrate-alert-title{font-weight:700;font-size:14px;color:var(--red);}
+.vibrate-alert-task{font-size:12px;color:var(--muted2);margin-top:2px;}
+.vibrate-alert-dismiss{background:var(--red);border:none;color:#fff;
+  padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-sans);}
 
 /* ── TOAST ── */
 .toasts{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:10px;}
@@ -272,7 +303,7 @@ select.field-input option{background:#1a1a2e;}
 .preview-task:last-child{margin-bottom:0;}
 .preview-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
 
-/* ── LOADING SPINNER ── */
+/* ── SPINNER ── */
 .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;
   border-radius:50%;animation:spin .7s linear infinite;display:none;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -301,7 +332,7 @@ select.field-input option{background:#1a1a2e;}
   <header class="header">
     <div class="logo-block">
       <div class="logo">Neural.Todo</div>
-      <div class="logo-sub">INTELLIGENT TASK ENGINE v2.0</div>
+      <div class="logo-sub">INTELLIGENT TASK ENGINE v3.0</div>
     </div>
     <div class="header-actions">
       <button class="pill-btn" onclick="openHistory()">📜 History</button>
@@ -316,16 +347,16 @@ select.field-input option{background:#1a1a2e;}
   <div class="nlp-strip">
     <div class="nlp-label">◈ NEURAL NLP ENGINE</div>
     <div class="nlp-row">
-      <input type="text" class="nlp-input" id="ai-input"
-        placeholder="e.g. 'Team meeting next Friday afternoon, pay rent day after tomorrow, gym tonight 8pm…'"
-        onkeydown="if(event.key==='Enter')parseAI()">
+      <textarea class="nlp-input" id="ai-input" rows="3"
+        placeholder="e.g. 'Team meeting next Friday afternoon, pay rent day after tomorrow, gym tonight 8pm…&#10;Paste your Moodle announcements, course notes, or any complex text with multiple tasks…'"
+        onkeydown="if(event.key==='Enter'&&event.ctrlKey)parseAI()"></textarea>
       <button class="nlp-btn" onclick="parseAI()" id="nlp-btn">
         <span id="nlp-btn-text">✦ Parse</span>
         <span class="spinner" id="nlp-spinner"></span>
       </button>
     </div>
     <div class="nlp-hint">
-      Understands: <span>tomorrow, next week, May 7 afternoon, day after tomorrow, Friday evening, in 3 hours, next month, specific dates, time ranges, complex notes with multiple tasks</span>
+      Understands: <span>tomorrow, next week, May 7 afternoon, WEDS 6 MAY 17.00-18.30, IN SEMINARRAUM H (015), multiple tasks in one paste, course announcements, deadlines. Press Ctrl+Enter to parse.</span>
     </div>
     <div class="parse-preview" id="parse-preview">
       <div class="preview-title">◈ PARSED TASKS PREVIEW</div>
@@ -358,6 +389,16 @@ select.field-input option{background:#1a1a2e;}
           <button class="filter-chip" onclick="setFilter('travel',this)">Travel</button>
         </div>
         <div class="task-list" id="task-list"></div>
+
+        <!-- MISSED TASKS SECTION -->
+        <div class="missed-section" id="missed-section" style="display:none;">
+          <div class="missed-header" onclick="toggleMissed()">
+            <div class="missed-title">⚠ MISSED / OVERDUE <span class="count-badge red" id="missed-count">0</span></div>
+            <span style="color:var(--muted);font-size:12px;" id="missed-toggle-icon">▼ Show</span>
+          </div>
+          <div class="missed-list" id="missed-list"></div>
+        </div>
+
         <div class="progress-wrap">
           <div class="progress-label">
             <span>Completion</span><span id="progress-pct">0%</span>
@@ -377,130 +418,141 @@ select.field-input option{background:#1a1a2e;}
           <div class="stat-box accent"><div class="stat-val" id="s-active">0</div><div class="stat-lbl">Active</div></div>
           <div class="stat-box green"><div class="stat-val" id="s-done">0</div><div class="stat-lbl">Completed</div></div>
           <div class="stat-box amber"><div class="stat-val" id="s-today">0</div><div class="stat-lbl">Due Today</div></div>
-          <div class="stat-box cyan"><div class="stat-val" id="s-upcoming">0</div><div class="stat-lbl">Upcoming</div></div>
+          <div class="stat-box red-box"><div class="stat-val" id="s-missed">0</div><div class="stat-lbl">Missed</div></div>
         </div>
       </div>
 
-      <!-- MANUAL FORM -->
-      <div class="form-panel">
-        <div class="form-panel-header">
-          <div class="form-panel-title">✚ Add Task Manually</div>
-          <button class="pill-btn" onclick="toggleForm()" id="form-toggle-btn">Open Form</button>
-        </div>
-        <div class="form-body" id="manual-form">
-          <div class="field-group">
-            <div class="field-label">TASK TITLE</div>
-            <input class="field-input" type="text" id="f-title" placeholder="Enter task title…">
-          </div>
-          <div class="field-group">
-            <div class="field-label">LOCATION (OPTIONAL)</div>
-            <input class="field-input" type="text" id="f-loc" placeholder="Room, building, address, online…">
-          </div>
-          <div class="field-group">
-            <div class="field-label">CATEGORY</div>
-            <select class="field-input" id="f-cat">
-              <option value="event">📅 Event</option>
-              <option value="meeting">🤝 Meeting</option>
-              <option value="work">💼 Work / Project</option>
-              <option value="deadline">⏰ Deadline</option>
-              <option value="finance">💰 Finance / Bill</option>
-              <option value="health">🏥 Health / Medical</option>
-              <option value="gym">🏋 Gym / Fitness</option>
-              <option value="shopping">🛒 Shopping</option>
-              <option value="travel">✈️ Travel</option>
-              <option value="study">📚 Study / Exam</option>
-              <option value="personal">👤 Personal</option>
-              <option value="social">🎉 Social</option>
-              <option value="general">📌 General</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <div class="field-label">DATE</div>
-            <input class="field-input" type="date" id="f-date">
-          </div>
-          <div class="field-group">
-            <div class="field-label">TIME MODE</div>
-            <div class="time-mode-tabs">
-              <button class="time-tab active" onclick="setTimeMode('exact',this)">Exact</button>
-              <button class="time-tab" onclick="setTimeMode('period',this)">Period</button>
-              <button class="time-tab" onclick="setTimeMode('range',this)">Range</button>
-              <button class="time-tab" onclick="setTimeMode('none',this)">None</button>
-            </div>
-          </div>
-          <!-- Exact time -->
-          <div id="tm-exact">
-            <div class="field-group">
-              <div class="field-label">TIME</div>
-              <input class="field-input" type="time" id="f-time">
-            </div>
-          </div>
-          <!-- Period select -->
-          <div id="tm-period" style="display:none;">
-            <div class="field-label" style="margin-bottom:8px;">PERIOD OF DAY</div>
-            <div class="period-select">
-              <button class="period-opt" onclick="setPeriod('morning',this)">🌅 Morning</button>
-              <button class="period-opt" onclick="setPeriod('afternoon',this)">☀️ Afternoon</button>
-              <button class="period-opt" onclick="setPeriod('evening',this)">🌆 Evening</button>
-              <button class="period-opt" onclick="setPeriod('night',this)">🌙 Night</button>
-              <button class="period-opt" onclick="setPeriod('allday',this)">📆 All Day</button>
-              <button class="period-opt" onclick="setPeriod('tba',this)">❓ TBA</button>
-            </div>
-          </div>
-          <!-- Time range -->
-          <div id="tm-range" style="display:none;">
-            <div class="field-row">
-              <div class="field-group">
-                <div class="field-label">FROM</div>
-                <input class="field-input" type="time" id="f-from">
-              </div>
-              <div class="field-group">
-                <div class="field-label">TO</div>
-                <input class="field-input" type="time" id="f-to">
-              </div>
-            </div>
-          </div>
-          <div class="field-group">
-            <div class="field-label">NOTES</div>
-            <textarea class="field-input" id="f-notes" rows="2" placeholder="Extra details…" style="resize:vertical;"></textarea>
-          </div>
-          <div class="field-group">
-            <div class="field-label">PRIORITY</div>
-            <select class="field-input" id="f-priority">
-              <option value="normal">🟡 Normal</option>
-              <option value="high">🔴 High</option>
-              <option value="low">🟢 Low</option>
-            </select>
-          </div>
-          <div class="reminder-row">
-            <div>
-              <div class="reminder-label">🔔 Set Reminder</div>
-              <div class="reminder-sub">Push notification before due time</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="f-reminder" checked>
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </label>
-          </div>
-          <div id="reminder-offset-wrap">
-            <div class="field-label" style="margin-bottom:8px;">REMIND ME</div>
-            <div class="reminder-offsets">
-              <button class="offset-chip" onclick="setReminderOffset(5,this)">5 min</button>
-              <button class="offset-chip active" onclick="setReminderOffset(15,this)">15 min</button>
-              <button class="offset-chip" onclick="setReminderOffset(30,this)">30 min</button>
-              <button class="offset-chip" onclick="setReminderOffset(60,this)">1 hr</button>
-              <button class="offset-chip" onclick="setReminderOffset(1440,this)">1 day</button>
-            </div>
-          </div>
-          <button class="submit-btn" onclick="addManual()">✚ Create Task</button>
-        </div>
-      </div>
+      <!-- ADD TASK BUTTON -->
+      <button class="add-task-btn" onclick="openManualModal()">✚ Add Task Manually</button>
 
     </div>
   </div>
 </div>
 
-<!-- HISTORY MODAL -->
+<!-- PERSISTENT VIBRATE ALERT -->
+<div class="vibrate-alert" id="vibrate-alert">
+  <div class="vibrate-alert-icon">🔔</div>
+  <div class="vibrate-alert-body">
+    <div class="vibrate-alert-title">TASK REMINDER</div>
+    <div class="vibrate-alert-task" id="vibrate-alert-task">—</div>
+  </div>
+  <button class="vibrate-alert-dismiss" onclick="dismissVibrateAlert()">Dismiss</button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toasts" id="toasts"></div>
+
+<!-- ===== MANUAL ADD MODAL ===== -->
+<div class="overlay" id="manual-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✚ Add Task Manually</div>
+      <button class="modal-close" onclick="closeManualModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-stack">
+        <div class="field-group">
+          <div class="field-label">TASK TITLE</div>
+          <input class="field-input" type="text" id="f-title" placeholder="Enter task title…">
+        </div>
+        <div class="field-group">
+          <div class="field-label">LOCATION (OPTIONAL)</div>
+          <input class="field-input" type="text" id="f-loc" placeholder="Room, building, address, online…">
+        </div>
+        <div class="field-group">
+          <div class="field-label">CATEGORY</div>
+          <select class="field-input" id="f-cat">
+            <option value="event">📅 Event</option>
+            <option value="meeting">🤝 Meeting</option>
+            <option value="work">💼 Work / Project</option>
+            <option value="deadline">⏰ Deadline</option>
+            <option value="finance">💰 Finance / Bill</option>
+            <option value="health">🏥 Health / Medical</option>
+            <option value="gym">🏋 Gym / Fitness</option>
+            <option value="shopping">🛒 Shopping</option>
+            <option value="travel">✈️ Travel</option>
+            <option value="study">📚 Study / Exam</option>
+            <option value="personal">👤 Personal</option>
+            <option value="social">🎉 Social</option>
+            <option value="general">📌 General</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">DATE</div>
+          <input class="field-input" type="date" id="f-date">
+        </div>
+        <div class="field-group">
+          <div class="field-label">TIME MODE</div>
+          <div class="time-mode-tabs">
+            <button class="time-tab active" onclick="setTimeMode('exact',this)">Exact</button>
+            <button class="time-tab" onclick="setTimeMode('period',this)">Period</button>
+            <button class="time-tab" onclick="setTimeMode('range',this)">Range</button>
+            <button class="time-tab" onclick="setTimeMode('none',this)">None</button>
+          </div>
+        </div>
+        <div id="tm-exact">
+          <div class="field-group">
+            <div class="field-label">TIME</div>
+            <input class="field-input" type="time" id="f-time">
+          </div>
+        </div>
+        <div id="tm-period" style="display:none;">
+          <div class="field-label" style="margin-bottom:8px;">PERIOD OF DAY</div>
+          <div class="period-select">
+            <button class="period-opt" onclick="setPeriod('morning',this)">🌅 Morning</button>
+            <button class="period-opt" onclick="setPeriod('afternoon',this)">☀️ Afternoon</button>
+            <button class="period-opt" onclick="setPeriod('evening',this)">🌆 Evening</button>
+            <button class="period-opt" onclick="setPeriod('night',this)">🌙 Night</button>
+            <button class="period-opt" onclick="setPeriod('allday',this)">📆 All Day</button>
+            <button class="period-opt" onclick="setPeriod('tba',this)">❓ TBA</button>
+          </div>
+        </div>
+        <div id="tm-range" style="display:none;">
+          <div class="field-row">
+            <div class="field-group"><div class="field-label">FROM</div><input class="field-input" type="time" id="f-from"></div>
+            <div class="field-group"><div class="field-label">TO</div><input class="field-input" type="time" id="f-to"></div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">NOTES</div>
+          <textarea class="field-input" id="f-notes" rows="2" placeholder="Extra details…" style="resize:vertical;"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field-label">PRIORITY</div>
+          <select class="field-input" id="f-priority">
+            <option value="normal">🟡 Normal</option>
+            <option value="high">🔴 High</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="reminder-row">
+          <div>
+            <div class="reminder-label">🔔 Set Reminder</div>
+            <div class="reminder-sub">Push notification before due time</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="f-reminder" checked>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div id="reminder-offset-wrap">
+          <div class="field-label" style="margin-bottom:8px;">REMIND ME</div>
+          <div class="reminder-offsets">
+            <button class="offset-chip" onclick="setReminderOffset(5,this)">5 min</button>
+            <button class="offset-chip active" onclick="setReminderOffset(15,this)">15 min</button>
+            <button class="offset-chip" onclick="setReminderOffset(30,this)">30 min</button>
+            <button class="offset-chip" onclick="setReminderOffset(60,this)">1 hr</button>
+            <button class="offset-chip" onclick="setReminderOffset(1440,this)">1 day</button>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="addManual()">✚ Create Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HISTORY MODAL ===== -->
 <div class="overlay" id="history-modal">
   <div class="modal">
     <div class="modal-header">
@@ -511,7 +563,7 @@ select.field-input option{background:#1a1a2e;}
   </div>
 </div>
 
-<!-- EDIT MODAL -->
+<!-- ===== EDIT MODAL ===== -->
 <div class="overlay" id="edit-modal">
   <div class="modal">
     <div class="modal-header">
@@ -520,22 +572,10 @@ select.field-input option{background:#1a1a2e;}
     </div>
     <div class="modal-body">
       <input type="hidden" id="edit-id">
-      <div class="edit-field">
-        <div class="edit-label">TITLE</div>
-        <input class="field-input" type="text" id="edit-title">
-      </div>
-      <div class="edit-field">
-        <div class="edit-label">DATE</div>
-        <input class="field-input" type="date" id="edit-date">
-      </div>
-      <div class="edit-field">
-        <div class="edit-label">TIME</div>
-        <input class="field-input" type="time" id="edit-time">
-      </div>
-      <div class="edit-field">
-        <div class="edit-label">LOCATION</div>
-        <input class="field-input" type="text" id="edit-loc" placeholder="Optional">
-      </div>
+      <div class="edit-field"><div class="edit-label">TITLE</div><input class="field-input" type="text" id="edit-title"></div>
+      <div class="edit-field"><div class="edit-label">DATE</div><input class="field-input" type="date" id="edit-date"></div>
+      <div class="edit-field"><div class="edit-label">TIME</div><input class="field-input" type="time" id="edit-time"></div>
+      <div class="edit-field"><div class="edit-label">LOCATION</div><input class="field-input" type="text" id="edit-loc" placeholder="Optional"></div>
       <div class="edit-field">
         <div class="edit-label">CATEGORY</div>
         <select class="field-input" id="edit-cat">
@@ -554,14 +594,9 @@ select.field-input option{background:#1a1a2e;}
           <option value="general">📌 General</option>
         </select>
       </div>
-      <div class="edit-field">
-        <div class="edit-label">NOTES</div>
-        <textarea class="field-input" id="edit-notes" rows="3" style="resize:vertical;"></textarea>
-      </div>
+      <div class="edit-field"><div class="edit-label">NOTES</div><textarea class="field-input" id="edit-notes" rows="3" style="resize:vertical;"></textarea></div>
       <div class="reminder-row" style="margin-bottom:14px;">
-        <div>
-          <div class="reminder-label">🔔 Reminder</div>
-        </div>
+        <div><div class="reminder-label">🔔 Reminder</div></div>
         <label class="toggle">
           <input type="checkbox" id="edit-reminder">
           <div class="toggle-track"></div>
@@ -573,7 +608,7 @@ select.field-input option{background:#1a1a2e;}
   </div>
 </div>
 
-<!-- NOTIFICATION SETTINGS MODAL -->
+<!-- ===== NOTIFICATION SETTINGS MODAL ===== -->
 <div class="overlay" id="notif-modal">
   <div class="modal">
     <div class="modal-header">
@@ -585,15 +620,22 @@ select.field-input option{background:#1a1a2e;}
         <div class="notif-section-title">NOTIFICATION TYPE</div>
         <div class="notif-option">
           <div><div class="notif-opt-lbl">Browser Push Notifications</div><div class="notif-opt-sub">System notifications from your browser</div></div>
-          <label class="toggle"><input type="checkbox" id="ns-push" checked onchange="togglePush()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          <label class="toggle"><input type="checkbox" id="ns-push" checked onchange="saveSetting('push',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
         </div>
         <div class="notif-option">
-          <div><div class="notif-opt-lbl">In-App Alerts</div><div class="notif-opt-sub">Toast messages inside this app</div></div>
-          <label class="toggle"><input type="checkbox" id="ns-toast" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          <div><div class="notif-opt-lbl">In-App Toast Alerts</div><div class="notif-opt-sub">Toast messages inside this app</div></div>
+          <label class="toggle"><input type="checkbox" id="ns-toast" checked onchange="saveSetting('toast',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
         </div>
         <div class="notif-option">
-          <div><div class="notif-opt-lbl">Vibration (Mobile)</div><div class="notif-opt-sub">Haptic feedback on task reminders</div></div>
-          <label class="toggle"><input type="checkbox" id="ns-vibrate" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          <div>
+            <div class="notif-opt-lbl">🔴 Persistent Vibrate Alert</div>
+            <div class="notif-opt-sub">Full-screen alert that vibrates until manually dismissed</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="ns-persistent" checked onchange="saveSetting('persistent',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="notif-option">
+          <div><div class="notif-opt-lbl">Standard Vibration (Mobile)</div><div class="notif-opt-sub">Short haptic feedback pattern on reminders</div></div>
+          <label class="toggle"><input type="checkbox" id="ns-vibrate" checked onchange="saveSetting('vibrate',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
         </div>
       </div>
       <div class="notif-section">
@@ -603,40 +645,38 @@ select.field-input option{background:#1a1a2e;}
           <button class="offset-chip active" onclick="setGlobalOffset(15,this)">15 min</button>
           <button class="offset-chip" onclick="setGlobalOffset(30,this)">30 min</button>
           <button class="offset-chip" onclick="setGlobalOffset(60,this)">1 hr</button>
-          <button class="offset-chip" onclick="setGlobalOffset(120,this)">2 hr</button>
           <button class="offset-chip" onclick="setGlobalOffset(1440,this)">1 day</button>
         </div>
       </div>
       <div class="notif-section">
-        <div class="notif-section-title">STATUS</div>
-        <div class="notif-option">
-          <div><div class="notif-opt-lbl">Permission Status</div><div class="notif-opt-sub" id="notif-perm-status">Checking…</div></div>
-          <button class="pill-btn" onclick="requestNotifPermission()">Request</button>
+        <div class="notif-section-title">PERMISSION STATUS</div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:13px;margin-bottom:8px;" id="notif-perm-status">Checking…</div>
+          <button class="submit-btn" onclick="requestNotifPermission()" style="font-size:13px;padding:10px;">Request Permission</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
-<div class="toasts" id="toasts"></div>
-
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
-let todos = JSON.parse(localStorage.getItem('nt2_active') || '[]');
-let history = JSON.parse(localStorage.getItem('nt2_history') || '[]');
+let todos = JSON.parse(localStorage.getItem('nt3_active') || '[]');
+let history = JSON.parse(localStorage.getItem('nt3_history') || '[]');
 let activeFilter = 'all';
 let currentPeriod = null;
 let currentTimeMode = 'exact';
 let currentReminderOffset = 15;
-let globalReminderOffset = 15;
-let settings = JSON.parse(localStorage.getItem('nt2_settings') || '{"push":true,"toast":true,"vibrate":true,"offset":15}');
+let settings = JSON.parse(localStorage.getItem('nt3_settings') || '{"push":true,"toast":true,"vibrate":true,"persistent":true,"offset":15}');
+let missedOpen = false;
+let vibrateInterval = null;
+let activeAlertTaskId = null;
 
 // ── SAVE & RENDER ──────────────────────────────────────────────────────────
 function save() {
-  localStorage.setItem('nt2_active', JSON.stringify(todos));
-  localStorage.setItem('nt2_history', JSON.stringify(history));
-  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+  localStorage.setItem('nt3_active', JSON.stringify(todos));
+  localStorage.setItem('nt3_history', JSON.stringify(history));
+  localStorage.setItem('nt3_settings', JSON.stringify(settings));
   render();
 }
 
@@ -651,14 +691,15 @@ function formatDate(iso) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const taskDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diff = (taskDay - today) / 86400000;
+  const diff = Math.round((taskDay - today) / 86400000);
   let label = '';
   if(diff === 0) label = 'Today';
   else if(diff === 1) label = 'Tomorrow';
   else if(diff === -1) label = 'Yesterday';
-  else label = d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  else if(diff < -1) label = `${Math.abs(diff)}d ago`;
+  else label = d.toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short'});
   const time = d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-  return `${label} ${time !== '00:00' ? '· '+time : ''}`.trim();
+  return `${label}${time !== '00:00' ? ' · '+time : ''}`.trim();
 }
 
 function isToday(iso) {
@@ -669,9 +710,7 @@ function isToday(iso) {
 }
 function isUpcoming(iso) {
   if(!iso) return false;
-  const d = new Date(iso);
-  const n = new Date();
-  return d > n && !isToday(iso);
+  return new Date(iso) > new Date() && !isToday(iso);
 }
 function isUrgent(iso) {
   if(!iso) return false;
@@ -683,57 +722,124 @@ function isSoon(iso) {
   const diff = new Date(iso) - new Date();
   return diff > 0 && diff < 86400000 && !isUrgent(iso);
 }
+function isMissed(iso, completed) {
+  if(!iso || completed) return false;
+  return new Date(iso) < new Date();
+}
 
-function getFilteredTodos() {
-  switch(activeFilter) {
-    case 'today': return todos.filter(t => isToday(t.due_date));
-    case 'upcoming': return todos.filter(t => isUpcoming(t.due_date));
-    case 'meeting': case 'work': case 'finance': case 'health': case 'travel':
-      return todos.filter(t => t.category === activeFilter || t.category.startsWith(activeFilter));
-    default: return todos;
+// ── GOOGLE MAPS LINK DETECTION ─────────────────────────────────────────────
+const PRECISE_LOCATION_PATTERNS = [
+  /\b(seminarraum|room|raum|saal|lecture hall|aula)\s+[A-Z0-9][^\n,]{0,30}/i,
+  /\b\d+\s+[A-Z][a-z]+(?:str(?:asse)?|straße|strasse|allee|weg|gasse|platz|ring)\b/i,
+  /\b[A-Z][a-z]+(?:str(?:asse)?|straße|strasse|allee|weg|gasse)\s*\.?\s*\d+/i,
+  /\b\d{5}\s+[A-Z][a-z]+/i,
+];
+
+function detectPreciseLocation(locText) {
+  if(!locText) return null;
+  for(const pat of PRECISE_LOCATION_PATTERNS) {
+    if(pat.test(locText)) return locText;
   }
+  return null;
+}
+
+function getMapsUrl(locText) {
+  // Check for explicit street addresses (bauhausstr, etc)
+  const streetMatch = locText.match(/\b([A-Za-zäöüÄÖÜß]+str(?:asse)?\.?\s*\d+[^\n,]*)/i);
+  if(streetMatch) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(streetMatch[1]+', Weimar')}`;
+  }
+  // Seminarraum with building number
+  const roomMatch = locText.match(/\b(seminarraum\s+[A-Z0-9][^\n,\.]*)/i);
+  if(roomMatch) return null; // internal location, can't map precisely
+  return null;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function getFilteredTodos() {
+  const active = todos.filter(t => !isMissed(t.due_date, t.completed));
+  switch(activeFilter) {
+    case 'today': return active.filter(t => isToday(t.due_date));
+    case 'upcoming': return active.filter(t => isUpcoming(t.due_date));
+    case 'meeting': case 'work': case 'finance': case 'health': case 'travel':
+      return active.filter(t => t.category === activeFilter || t.category.startsWith(activeFilter));
+    default: return active;
+  }
+}
+
+function getMissedTodos() {
+  return todos.filter(t => isMissed(t.due_date, t.completed));
+}
+
+function buildTaskHtml(t, isMissedTask=false) {
+  const dateStr = t.period
+    ? `${['🌅','☀️','🌆','🌙','📆','❓'][['morning','afternoon','evening','night','allday','tba'].indexOf(t.period)] || '🕐'} ${t.period.charAt(0).toUpperCase()+t.period.slice(1)}`
+    : (t.due_date ? formatDate(t.due_date) : null);
+
+  let locChip = '';
+  if(t.location) {
+    const mapsUrl = getMapsUrl(t.location);
+    if(mapsUrl) {
+      locChip = `<a class="meta-chip loc" href="${mapsUrl}" target="_blank" title="Open in Google Maps">📍 ${t.location} 🗺</a>`;
+    } else {
+      locChip = `<span class="meta-chip loc">📍 ${t.location}</span>`;
+    }
+  }
+
+  const dateClass = isMissedTask ? 'missed-chip' : (isUrgent(t.due_date)?'urgent':isSoon(t.due_date)?'soon':'');
+  const dateIcon = isMissedTask ? '⚠ ' : (isUrgent(t.due_date)?'🚨 ':isSoon(t.due_date)?'⚡ ':'📅 ');
+
+  return `<div class="task-item${isMissedTask?' missed':''}" id="ti-${t.id}">
+    <div class="check-box${t.completed?' checked':''}" onclick="toggleDone(${t.id})"></div>
+    <div class="task-body">
+      <div class="task-title">${getCatIcon(t.category)} ${t.title}</div>
+      <div class="task-meta">
+        <span class="meta-chip cat">${t.category}</span>
+        ${dateStr ? `<span class="meta-chip date ${dateClass}">${dateIcon}${dateStr}</span>` : ''}
+        ${locChip}
+        ${t.priority === 'high' ? `<span class="meta-chip urgent">HIGH</span>` : ''}
+        ${t.reminder ? `<span class="meta-chip" style="border-color:rgba(124,92,252,0.3);color:var(--accent)">🔔 ${t.reminderOffset||15}m</span>` : ''}
+        ${isMissedTask ? `<span class="meta-chip missed-chip">MISSED</span>` : ''}
+      </div>
+      ${t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;">${t.notes}</div>` : ''}
+    </div>
+    <div class="task-actions">
+      <button class="task-action-btn" onclick="openEdit(${t.id})" title="Edit">✏️</button>
+      <button class="task-action-btn del" onclick="deleteTask(${t.id})" title="Delete">🗑</button>
+    </div>
+  </div>`;
 }
 
 function render() {
   const filtered = getFilteredTodos();
+  const missed = getMissedTodos();
   const list = document.getElementById('task-list');
   document.getElementById('task-count').textContent = filtered.length;
 
   if(filtered.length === 0) {
     list.innerHTML = `<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-text">No tasks here.<br>Parse a note or add one manually.</div></div>`;
   } else {
-    list.innerHTML = filtered.map(t => {
-      const dateStr = t.period ? `${['🌅','☀️','🌆','🌙','📆','❓'][['morning','afternoon','evening','night','allday','tba'].indexOf(t.period)] || '🕐'} ${t.period.charAt(0).toUpperCase()+t.period.slice(1)}` : (t.due_date ? formatDate(t.due_date) : null);
-      return `<div class="task-item${t.completed?' done':''}" id="ti-${t.id}">
-        <div class="check-box${t.completed?' checked':''}" onclick="toggleDone(${t.id})"></div>
-        <div class="task-body">
-          <div class="task-title">${getCatIcon(t.category)} ${t.title}</div>
-          <div class="task-meta">
-            <span class="meta-chip cat">${t.category}</span>
-            ${dateStr ? `<span class="meta-chip date ${isUrgent(t.due_date)?'urgent':isSoon(t.due_date)?'soon':''}">${isUrgent(t.due_date)?'🚨 ':isSoon(t.due_date)?'⚡ ':'📅 '}${dateStr}</span>` : ''}
-            ${t.location ? `<span class="meta-chip loc">📍 ${t.location}</span>` : ''}
-            ${t.priority === 'high' ? `<span class="meta-chip urgent">HIGH</span>` : ''}
-            ${t.reminder ? `<span class="meta-chip" style="border-color:rgba(124,92,252,0.3);color:var(--accent)">🔔 ${t.reminderOffset||15}m</span>` : ''}
-          </div>
-          ${t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;">${t.notes}</div>` : ''}
-        </div>
-        <div class="task-actions">
-          <button class="task-action-btn" onclick="openEdit(${t.id})" title="Edit">✏️</button>
-          <button class="task-action-btn del" onclick="deleteTask(${t.id})" title="Delete">🗑</button>
-        </div>
-      </div>`;
-    }).join('');
+    list.innerHTML = filtered.map(t => buildTaskHtml(t)).join('');
+  }
+
+  // Missed section
+  const missedSection = document.getElementById('missed-section');
+  const missedList = document.getElementById('missed-list');
+  const missedCount = document.getElementById('missed-count');
+  if(missed.length > 0) {
+    missedSection.style.display = 'block';
+    missedCount.textContent = missed.length;
+    missedList.innerHTML = missed.map(t => buildTaskHtml(t, true)).join('');
+  } else {
+    missedSection.style.display = 'none';
   }
 
   // Stats
-  const now = new Date();
-  const todayCount = todos.filter(t => isToday(t.due_date) && !t.completed).length;
-  const upcomingCount = todos.filter(t => isUpcoming(t.due_date) && !t.completed).length;
   const doneCount = todos.filter(t => t.completed).length;
-  document.getElementById('s-active').textContent = todos.filter(t=>!t.completed).length;
+  document.getElementById('s-active').textContent = todos.filter(t=>!t.completed && !isMissed(t.due_date,t.completed)).length;
   document.getElementById('s-done').textContent = doneCount;
-  document.getElementById('s-today').textContent = todayCount;
-  document.getElementById('s-upcoming').textContent = upcomingCount;
+  document.getElementById('s-today').textContent = todos.filter(t => isToday(t.due_date) && !t.completed).length;
+  document.getElementById('s-missed').textContent = missed.length;
 
   const total = todos.length;
   const pct = total ? Math.round((doneCount/total)*100) : 0;
@@ -741,55 +847,438 @@ function render() {
   document.getElementById('progress-pct').textContent = pct + '%';
 }
 
-// ── NLP PARSE ──────────────────────────────────────────────────────────────
+function toggleMissed() {
+  missedOpen = !missedOpen;
+  document.getElementById('missed-list').classList.toggle('open', missedOpen);
+  document.getElementById('missed-toggle-icon').textContent = missedOpen ? '▲ Hide' : '▼ Show';
+}
+
+// ── NLP PARSE (CLIENT-SIDE ENGINE) ─────────────────────────────────────────
+// Full NLP engine — works standalone, no server needed
+const WEEKDAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const WEEKDAY_ABBR = {'sun':0,'mon':1,'tue':2,'wed':3,'weds':3,'thu':4,'fri':5,'sat':6};
+const MONTHS = {january:1,jan:1,february:2,feb:2,march:3,mar:3,april:4,apr:4,may:5,june:6,jun:6,july:7,jul:7,august:8,aug:8,september:9,sep:9,sept:9,october:10,oct:10,november:11,nov:11,december:12,dec:12};
+const ORDINALS = {first:'1',second:'2',third:'3',fourth:'4',fifth:'5',sixth:'6',seventh:'7',eighth:'8',ninth:'9',tenth:'10',eleventh:'11',twelfth:'12',thirteenth:'13',fourteenth:'14',fifteenth:'15',sixteenth:'16',seventeenth:'17',eighteenth:'18',nineteenth:'19',twentieth:'20','1st':'1','2nd':'2','3rd':'3','4th':'4','5th':'5','6th':'6','7th':'7','8th':'8','9th':'9','10th':'10','11th':'11','12th':'12','13th':'13','14th':'14','15th':'15','16th':'16','17th':'17','18th':'18','19th':'19','20th':'20','21st':'21','22nd':'22','23rd':'23','24th':'24','25th':'25','26th':'26','27th':'27','28th':'28','29th':'29','30th':'30','31st':'31'};
+const PERIOD_HOURS = {morning:9,'early morning':7,'late morning':11,afternoon:14,'early afternoon':12,'late afternoon':16,evening:18,'late evening':20,night:21,'late night':23,midnight:0,noon:12,midday:12,lunch:12,breakfast:8,dinner:19,tonight:20};
+
+function normalizeOrdinals(text) {
+  let t = text.toLowerCase();
+  // Sort by length desc so longer phrases match first
+  for(const [word, num] of Object.entries(ORDINALS).sort((a,b) => b[0].length - a[0].length)) {
+    t = t.replace(new RegExp('\\b'+word+'\\b','gi'), num);
+  }
+  return t;
+}
+
+function parseTimeStr(text) {
+  // 24h: 18:00 or 18.00 or 17.00-18.30 (take first)
+  let m = text.match(/\b(\d{1,2})[:.h](\d{2})\b/);
+  if(m) {
+    const h = parseInt(m[1]), mn = parseInt(m[2]);
+    if(h >= 0 && h <= 23 && mn >= 0 && mn <= 59) return [h, mn];
+  }
+  // 12h: 6pm, 6:30pm, 6:30 pm
+  m = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+  if(m) {
+    let h = parseInt(m[1]);
+    const mn = m[2] ? parseInt(m[2]) : 0;
+    const sfx = m[3].toLowerCase();
+    if(sfx === 'pm' && h !== 12) h += 12;
+    if(sfx === 'am' && h === 12) h = 0;
+    return [h, mn];
+  }
+  return [null, null];
+}
+
+function getPeriodHour(text) {
+  const t = text.toLowerCase();
+  for(const [period, hour] of Object.entries(PERIOD_HOURS).sort((a,b) => b[0].length - a[0].length)) {
+    if(t.includes(period)) return [hour, period];
+  }
+  return [null, null];
+}
+
+function parseDateFromText(text, now) {
+  if(!now) now = new Date();
+  const t = text.toLowerCase();
+  const tNorm = normalizeOrdinals(t);
+  let result = null;
+
+  // "day after tomorrow"
+  if(/day after tomorrow/.test(t)) result = new Date(now.getTime() + 2*86400000);
+  else if(/day before yesterday/.test(t)) result = new Date(now.getTime() - 2*86400000);
+  else if(/\byesterday\b/.test(t)) result = new Date(now.getTime() - 86400000);
+  else if(/\btoday\b|\bthis (morning|afternoon|evening|night)\b/.test(t)) result = new Date(now);
+  else if(/\btomorrow\b/.test(t)) result = new Date(now.getTime() + 86400000);
+
+  if(!result) {
+    let m = t.match(/in (\d+) days?/);
+    if(m) result = new Date(now.getTime() + parseInt(m[1])*86400000);
+  }
+  if(!result) {
+    let m = t.match(/in (\d+) hours?/);
+    if(m) {
+      const r = new Date(now.getTime() + parseInt(m[1])*3600000);
+      const [h, mn] = parseTimeStr(text);
+      if(h !== null) return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, mn);
+      return r;
+    }
+  }
+  if(!result) {
+    let m = t.match(/in (\d+) minutes?/);
+    if(m) return new Date(now.getTime() + parseInt(m[1])*60000);
+  }
+
+  // WEEKDAY matching — handle "WEDS", "Wed", "Wednesday", etc.
+  if(!result) {
+    // Check abbreviated weekdays first
+    for(const [abbr, idx] of Object.entries(WEEKDAY_ABBR)) {
+      const re = new RegExp('\\b(next\\s+)?'+abbr+'\\b','i');
+      if(re.test(t)) {
+        const isNext = /next\s+/i.test(t);
+        const currentWd = now.getDay();
+        let diff = (idx - currentWd + 7) % 7;
+        if(diff === 0) diff = 7;
+        if(isNext) diff = (diff === 0 ? 7 : (idx > currentWd ? diff : diff + 7));
+        result = new Date(now.getTime() + diff*86400000);
+        break;
+      }
+    }
+  }
+  if(!result) {
+    for(let i=0;i<WEEKDAYS.length;i++) {
+      const day = WEEKDAYS[i];
+      if(new RegExp('\\b(next|coming|this)?\\s*'+day+'\\b','i').test(t)) {
+        const isNext = /next /i.test(t);
+        const currentWd = now.getDay();
+        let diff = (i - currentWd + 7) % 7;
+        if(diff === 0 || isNext) diff = diff === 0 ? 7 : (isNext && diff !== 0 ? diff + 7 : diff);
+        if(diff === 0) diff = 7;
+        result = new Date(now.getTime() + diff*86400000);
+        break;
+      }
+    }
+  }
+
+  // next week / month
+  if(!result) {
+    if(/\bnext week\b/.test(t)) result = new Date(now.getTime() + 7*86400000);
+    else if(/in (\d+) weeks?/.test(t)) {
+      const m = t.match(/in (\d+) weeks?/);
+      result = new Date(now.getTime() + parseInt(m[1])*7*86400000);
+    } else if(/\bnext month\b/.test(t)) result = new Date(now.getTime() + 30*86400000);
+    else if(/\bend of (the )?month\b/.test(t)) {
+      result = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    }
+  }
+
+  // Specific dates: "May 7", "10th of May", "Sunday 10th of May", "7 May"
+  if(!result) {
+    for(const [monName, monNum] of Object.entries(MONTHS).sort((a,b) => b[0].length - a[0].length)) {
+      // "May 7" or "may 7"
+      let m = tNorm.match(new RegExp('\\b'+monName+'\\s+(\\d{1,2})\\b'));
+      if(m) {
+        const day = parseInt(m[1]);
+        let year = now.getFullYear();
+        const yearM = tNorm.match(new RegExp(monName+'.*?(\\d{4})'));
+        if(yearM) year = parseInt(yearM[1]);
+        let candidate = new Date(year, monNum-1, day, 9, 0);
+        if(candidate < now && !yearM) candidate = new Date(year+1, monNum-1, day, 9, 0);
+        result = candidate;
+        break;
+      }
+      // "10th of may" / "10 may"
+      m = tNorm.match(new RegExp('(\\d{1,2})\\s+(?:of\\s+)?'+monName+'\\b'));
+      if(m) {
+        const day = parseInt(m[1]);
+        let year = now.getFullYear();
+        const yearM = tNorm.match(new RegExp(monName+'.*?(\\d{4})'));
+        if(yearM) year = parseInt(yearM[1]);
+        try {
+          let candidate = new Date(year, monNum-1, day, 9, 0);
+          if(candidate < now && !yearM) candidate = new Date(year+1, monNum-1, day, 9, 0);
+          result = candidate;
+          break;
+        } catch(e) {}
+      }
+    }
+  }
+
+  // ISO date: 2026-05-07
+  if(!result) {
+    const m = t.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+    if(m) result = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]), 9, 0);
+  }
+
+  if(result) {
+    const [h, mn] = parseTimeStr(text);
+    if(h !== null) {
+      result = new Date(result.getFullYear(), result.getMonth(), result.getDate(), h, mn, 0);
+    } else {
+      const [ph] = getPeriodHour(text);
+      if(ph !== null) {
+        result = new Date(result.getFullYear(), result.getMonth(), result.getDate(), ph, 0, 0);
+      }
+    }
+    return result;
+  }
+
+  // Time only
+  const [h2, mn2] = parseTimeStr(text);
+  if(h2 !== null) {
+    let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h2, mn2, 0);
+    if(candidate < now) candidate = new Date(candidate.getTime() + 86400000);
+    return candidate;
+  }
+
+  const [ph2] = getPeriodHour(text);
+  if(ph2 !== null) {
+    let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), ph2, 0, 0);
+    if(candidate < now) candidate = new Date(candidate.getTime() + 86400000);
+    return candidate;
+  }
+
+  return null;
+}
+
+function classifyCategory(text) {
+  const t = text.toLowerCase();
+  const rules = [
+    ['meeting', ['meet','call','zoom','teams','sync','interview','appointment','session','conference','seminar','seminarraum','planning meeting','initial meeting','discussion','weds','held on']],
+    ['deadline', ['deadline','submit','submission','due','hand in','upload','cloud upload','complete by','completed by','present','presentation','task should','paper presentation']],
+    ['study', ['exam','lecture','class','course','module','university','moodle','academic','english','physiological','computing','homework','assignment','paper','essay','thesis','semester','sose','uni','bauhausstr','llm','textwasserzeichen','written exam']],
+    ['finance', ['bill','pay','rent','invoice','salary','tax','bank','transfer','subscription','insurance']],
+    ['health', ['doctor','hospital','clinic','medicine','prescription','therapy','checkup','dentist','physio']],
+    ['gym', ['gym','workout','exercise','run','running','yoga','fitness','training','pilates','cycling','swim']],
+    ['shopping', ['buy','get','shop','order','purchase','grocery','groceries','supermarket','amazon']],
+    ['travel', ['flight','trip','hotel','booking','bus','train','airport','travel','journey','uber','taxi']],
+    ['social', ['party','birthday','dinner','lunch','brunch','hangout','catch up','drinks','celebrate','wedding']],
+    ['work', ['report','email','send','submit','project','review','develop','implement','code','debug','deploy','write','create','fix']],
+  ];
+  for(const [cat, kws] of rules) {
+    if(kws.some(kw => t.includes(kw))) return cat;
+  }
+  return 'general';
+}
+
+function extractLocation(text) {
+  // Seminarraum + room ID
+  let m = text.match(/\bSEMINARRAUM\s+([A-Z]\s*\(\d+\)|[A-Z0-9]+)/i);
+  if(m) return 'Seminarraum ' + m[1].trim();
+
+  // Room X (NNN)
+  m = text.match(/\broom\s+([A-Z0-9][^\n,\.]{0,30})/i);
+  if(m) return m[0].trim();
+
+  // Bauhausstr / street address
+  m = text.match(/\b([A-Za-zäöüÄÖÜß]+str(?:asse)?\.?\s*\d+[^\n,]*)/i);
+  if(m) return m[1].trim();
+
+  // at / in + capitalized place (room, building)
+  m = text.match(/\b(?:in|at|@)\s+([A-Z][^\.,\n]{3,40})/);
+  if(m) return m[1].trim();
+
+  // Online/zoom
+  if(/\b(zoom|teams|online|virtual|remote)\b/i.test(text)) return 'Online';
+
+  return null;
+}
+
+// ── SMART SPLIT — improved for academic/moodle text ────────────────────────
+function smartSplit(text) {
+  text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+
+  // Remove raw URL-only lines and "From <url>" lines
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const cleaned = [];
+
+  for(const line of lines) {
+    if(/^https?:\/\//i.test(line)) continue;
+    if(/^from\s*https?:\/\//i.test(line)) continue;
+    if(/^from\s*<https?/i.test(line)) continue;
+    if(line.length < 4) continue;
+    cleaned.push(line);
+  }
+
+  // Now try to detect task boundaries
+  // Strategy: group consecutive lines that belong to the same task
+  // A new task starts when we see: a new course/subject keyword, a bullet point, 
+  // or a clear separation like "●", "•", "·", or a line that starts with a capitalized course title
+
+  const COURSE_PATTERNS = [
+    /\bSoSe\d{4}\b/i,
+    /\bWiSe\d{4}\b/i,
+    /\b(Physiological|Academic English|LLM|Computing|Textwasserzeichen)\b/i,
+  ];
+
+  const TASK_START_PATTERNS = [
+    /^[●•·▸▹►✓✗✦◆◈]\s/,  // bullet
+    /^\d+\.\s+[A-Z]/,       // numbered list
+    /^[A-Z][A-Z\s]{10,}$/,  // ALL CAPS line (announcement header)
+  ];
+
+  const chunks = [];
+  let current = '';
+
+  for(let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i];
+    const isNewCourse = COURSE_PATTERNS.some(p => p.test(line)) && i > 0 && current.length > 20;
+    const isTaskStart = TASK_START_PATTERNS.some(p => p.test(line));
+    const hasBulletInLine = line.includes('●') || line.includes('•');
+
+    if(isNewCourse || (isTaskStart && current.length > 10)) {
+      if(current.trim()) chunks.push(current.trim());
+      current = line;
+    } else if(hasBulletInLine) {
+      // Split on bullets within a single line
+      if(current.trim()) chunks.push(current.trim());
+      const parts = line.split(/[●•]/).map(s => s.trim()).filter(s => s.length > 3);
+      for(let j = 0; j < parts.length - 1; j++) chunks.push(parts[j]);
+      current = parts[parts.length - 1] || '';
+    } else {
+      current = current ? current + ' ' + line : line;
+    }
+  }
+  if(current.trim()) chunks.push(current.trim());
+
+  return chunks.filter(c => c.length > 4);
+}
+
+// ── GROUP RELATED TASKS TOGETHER ──────────────────────────────────────────
+// For the example input, we want to merge "Physiological Computing" block
+// and "Academic English" block and "LLM" block into separate tasks
+function consolidateChunks(chunks) {
+  // If a chunk has a course name (SoSe pattern) followed by details, keep as one task
+  // If a chunk is very long (>300 chars), try to split on strong boundaries
+  const result = [];
+  for(const chunk of chunks) {
+    if(chunk.length > 400) {
+      // Try to split on capitalized section breaks
+      const parts = chunk.split(/(?<=\.)\s+(?=[A-Z][A-Z])/);
+      if(parts.length > 1) {
+        result.push(...parts.filter(p => p.length > 10));
+      } else {
+        result.push(chunk);
+      }
+    } else {
+      result.push(chunk);
+    }
+  }
+  return result;
+}
+
+// ── TITLE CLEANUP ─────────────────────────────────────────────────────────
+function cleanTitle(raw) {
+  let t = raw;
+  t = t.replace(/https?:\/\/\S+/g, '').trim();
+  t = t.replace(/from\s*<https?:\/\/[^>]+>/gi, '').trim();
+  t = t.replace(/\s{2,}/g, ' ');
+  t = t.replace(/^[●•·▸▹►\s]+/, '');
+  // Capitalize first letter
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+  if(t.length > 180) t = t.slice(0, 177) + '…';
+  return t.trim();
+}
+
+// ── MAIN PARSE FUNCTION ────────────────────────────────────────────────────
 async function parseAI() {
   const input = document.getElementById('ai-input');
   const text = input.value.trim();
   if(!text) return;
 
-  // Show spinner
   document.getElementById('nlp-btn-text').style.display = 'none';
   document.getElementById('nlp-spinner').style.display = 'inline-block';
 
   try {
-    const res = await fetch('/api/parse', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text})
-    });
-    if(!res.ok) throw new Error('Server error');
-    const tasks = await res.json();
+    // Try server first
+    let tasks = null;
+    try {
+      const res = await fetch('/api/parse', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({text}),
+        signal: AbortSignal.timeout(5000)
+      });
+      if(res.ok) tasks = await res.json();
+    } catch(e) {
+      // Server not available — use client-side engine
+    }
+
+    if(!tasks) {
+      tasks = parseClientSide(text);
+    }
+
+    if(tasks.length === 0) {
+      toast('⚠ No tasks detected. Try being more specific.', 'error');
+      return;
+    }
 
     // Show preview
     const preview = document.getElementById('parse-preview');
     const plist = document.getElementById('preview-list');
     plist.innerHTML = tasks.map(t =>
-      `<div class="preview-task"><div class="preview-dot"></div><strong>${getCatIcon(t.category)} ${t.title}</strong>&nbsp;<span style="color:var(--muted);font-size:12px;">${t.due_date ? '· '+formatDate(t.due_date) : ''}</span></div>`
+      `<div class="preview-task"><div class="preview-dot"></div>
+       <strong>${getCatIcon(t.category)} ${t.title.slice(0,60)}${t.title.length>60?'…':''}</strong>
+       <span style="color:var(--muted);font-size:12px;">${t.due_date ? '· '+formatDate(t.due_date) : ''}</span>
+       </div>`
     ).join('');
     preview.classList.add('show');
 
     todos = [...tasks, ...todos];
     input.value = '';
     vibrate([40,20,40]);
-    toast('✦ Parsed ' + tasks.length + ' task(s)', 'success');
+    toast(`✦ Parsed ${tasks.length} task(s)`, 'success');
     save();
+    setTimeout(() => preview.classList.remove('show'), 5000);
 
-    setTimeout(() => preview.classList.remove('show'), 4000);
   } catch(e) {
-    toast('⚠ Could not reach server. Add task manually.', 'error');
+    toast('⚠ Parse failed. Try again.', 'error');
   } finally {
     document.getElementById('nlp-btn-text').style.display = '';
     document.getElementById('nlp-spinner').style.display = 'none';
   }
 }
 
+function parseClientSide(text) {
+  const now = new Date();
+  const chunks = consolidateChunks(smartSplit(text));
+  const results = [];
+
+  for(const chunk of chunks) {
+    const clean = chunk.trim();
+    if(clean.length < 3) continue;
+
+    const dt = parseDateFromText(clean, now);
+    const cat = classifyCategory(clean);
+    const loc = extractLocation(clean);
+    const title = cleanTitle(clean);
+
+    if(!title || title.length < 3) continue;
+
+    results.push({
+      id: Date.now() + results.length * 7,
+      title,
+      due_date: dt ? dt.toISOString() : null,
+      category: cat,
+      location: loc,
+      reminder: true,
+      reminderOffset: 15,
+      completed: false,
+      reminded: false,
+      source: 'nlp',
+      priority: 'normal',
+      notes: null
+    });
+  }
+  return results;
+}
+
 // ── MANUAL FORM ────────────────────────────────────────────────────────────
-function toggleForm() {
-  const form = document.getElementById('manual-form');
-  const btn = document.getElementById('form-toggle-btn');
-  const isOpen = form.classList.contains('open');
-  form.classList.toggle('open', !isOpen);
-  btn.textContent = isOpen ? 'Open Form' : 'Close Form';
+function openManualModal() {
+  document.getElementById('manual-modal').classList.add('open');
+}
+function closeManualModal() {
+  document.getElementById('manual-modal').classList.remove('open');
 }
 
 function setTimeMode(mode, el) {
@@ -831,10 +1320,9 @@ function addManual() {
     period = currentPeriod;
   } else if(currentTimeMode === 'range') {
     const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
     if(date && from) dueDate = `${date}T${from}`;
-    if(date && document.getElementById('f-to').value) {
-      // Store range as notes addendum
-    }
+    if(to) { /* store range in notes */ }
   }
 
   const task = {
@@ -855,15 +1343,20 @@ function addManual() {
   todos.unshift(task);
   vibrate([30]);
   toast(`✚ "${title}" added`, 'success');
+
+  // Reset and close
   document.getElementById('f-title').value = '';
   document.getElementById('f-loc').value = '';
   document.getElementById('f-notes').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-time').value = '';
+  closeManualModal();
   save();
 }
 
 // ── TASK ACTIONS ───────────────────────────────────────────────────────────
 function toggleDone(id) {
-  const t = todos.find(t => t.id === id);
+  let t = todos.find(t => t.id === id);
   if(!t) return;
   t.completed = !t.completed;
   if(t.completed) {
@@ -982,23 +1475,24 @@ function openNotifSettings() {
   document.getElementById('ns-push').checked = settings.push;
   document.getElementById('ns-toast').checked = settings.toast;
   document.getElementById('ns-vibrate').checked = settings.vibrate;
+  document.getElementById('ns-persistent').checked = settings.persistent !== false;
   const perm = Notification.permission;
-  document.getElementById('notif-perm-status').textContent = 
+  document.getElementById('notif-perm-status').textContent =
     perm === 'granted' ? '✅ Granted — notifications active' :
     perm === 'denied' ? '❌ Denied — check browser settings' : '⚠ Not yet requested';
 }
 function closeNotif() { document.getElementById('notif-modal').classList.remove('open'); }
 
-function togglePush() {
-  settings.push = document.getElementById('ns-push').checked;
-  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+function saveSetting(key, val) {
+  settings[key] = val;
+  localStorage.setItem('nt3_settings', JSON.stringify(settings));
 }
+
 function setGlobalOffset(val, el) {
-  globalReminderOffset = val;
   settings.offset = val;
   document.querySelectorAll('#notif-modal .offset-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+  localStorage.setItem('nt3_settings', JSON.stringify(settings));
 }
 
 async function requestNotifPermission() {
@@ -1015,6 +1509,29 @@ function vibrate(pattern) {
   if(settings.vibrate && navigator.vibrate) navigator.vibrate(pattern);
 }
 
+// ── PERSISTENT VIBRATE ALERT ───────────────────────────────────────────────
+function showVibrateAlert(task) {
+  const alertEl = document.getElementById('vibrate-alert');
+  document.getElementById('vibrate-alert-task').textContent = task.title.slice(0,80) + (task.title.length > 80 ? '…' : '');
+  alertEl.classList.add('show');
+  activeAlertTaskId = task.id;
+
+  // Vibrate repeatedly until dismissed
+  if(navigator.vibrate) {
+    vibrateInterval = setInterval(() => {
+      if(settings.persistent !== false) navigator.vibrate([200, 100, 200, 100, 400]);
+    }, 2000);
+  }
+}
+
+function dismissVibrateAlert() {
+  document.getElementById('vibrate-alert').classList.remove('show');
+  if(vibrateInterval) { clearInterval(vibrateInterval); vibrateInterval = null; }
+  if(navigator.vibrate) navigator.vibrate(0); // stop vibration
+  activeAlertTaskId = null;
+  if(settings.vibrate) navigator.vibrate && navigator.vibrate([50]);
+}
+
 // ── REMINDER ENGINE ────────────────────────────────────────────────────────
 function checkReminders() {
   const now = Date.now();
@@ -1023,7 +1540,7 @@ function checkReminders() {
     const taskMs = new Date(t.due_date).getTime();
     const offset = (t.reminderOffset || settings.offset || 15) * 60000;
     const target = taskMs - offset;
-    if(now >= target && now < taskMs) {
+    if(now >= target && now < taskMs + 60000) {
       triggerReminder(t);
       t.reminded = true;
       save();
@@ -1032,15 +1549,19 @@ function checkReminders() {
 }
 
 function triggerReminder(task) {
-  if(settings.toast) toast(`🔔 Reminder: ${task.title}`, 'info');
+  if(settings.toast) toast(`🔔 ${task.title.slice(0,50)}`, 'info');
   if(settings.push && Notification.permission === 'granted') {
     new Notification('Neural.Todo Reminder', {
-      body: `${getCatIcon(task.category)} ${task.title}\n${task.due_date ? new Date(task.due_date).toLocaleString() : ''}`,
+      body: `${getCatIcon(task.category)} ${task.title}\n${task.due_date ? new Date(task.due_date).toLocaleString('en-GB') : ''}`,
       icon: '/favicon.ico',
       tag: 'task-'+task.id
     });
   }
-  if(settings.vibrate) vibrate([100,50,100,50,200]);
+  if(settings.persistent !== false) {
+    showVibrateAlert(task);
+  } else if(settings.vibrate) {
+    vibrate([100,50,100,50,200]);
+  }
 }
 
 setInterval(checkReminders, 30000);
@@ -1062,16 +1583,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if(Notification.permission === 'default') {
     document.getElementById('notif-dot').style.display = 'inline-block';
   }
-  document.getElementById('notif-perm-status') && (document.getElementById('notif-perm-status').textContent = Notification.permission);
-
-  // Load settings toggles
-  document.getElementById('ns-push').checked = settings.push;
-  document.getElementById('ns-toast').checked = settings.toast;
-  document.getElementById('ns-vibrate').checked = settings.vibrate;
 });
 
 // Close modals on overlay click
-['history-modal','notif-modal'].forEach(id => {
+['history-modal','notif-modal','manual-modal'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e) {
     if(e.target === this) this.classList.remove('open');
   });
