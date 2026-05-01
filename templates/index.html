@@ -1,212 +1,1084 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartTodo Ultra Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #020204; --card: rgba(15, 15, 25, 0.7); --border: rgba(255,255,255,0.08);
-            --accent: #8b5cf6; --accent-glow: rgba(139, 92, 246, 0.3);
-            --text: #ffffff; --muted: #64748b;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural.Todo — Intelligent Task Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0e0e1a;
+  --surface2: #13131f;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(139,92,246,0.35);
+  --accent: #7c5cfc;
+  --accent2: #e879f9;
+  --accent3: #06b6d4;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text: #f1f5f9;
+  --muted: #475569;
+  --muted2: #64748b;
+  --glow: rgba(124,92,252,0.2);
+  --font-sans: 'Cabinet Grotesk', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-serif: 'Instrument Serif', serif;
+  --r: 20px;
+  --r-sm: 12px;
+}
 
-        .mesh { position: fixed; inset: 0; z-index: -1; background: 
-            radial-gradient(circle at 0% 0%, #1e1b4b 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, #312e81 0%, transparent 50%); }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);min-height:100vh;font-family:var(--font-sans);overflow-x:hidden;line-height:1.5;}
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+/* ── BACKGROUND ── */
+.bg-mesh{position:fixed;inset:0;z-index:-2;
+  background:radial-gradient(ellipse 60% 50% at 10% 0%,rgba(124,92,252,0.12) 0%,transparent 70%),
+             radial-gradient(ellipse 40% 40% at 90% 100%,rgba(232,121,249,0.08) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 40% at 50% 50%,rgba(6,182,212,0.04) 0%,transparent 70%);
+}
+.bg-grid{position:fixed;inset:0;z-index:-1;opacity:0.025;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px;
+}
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
-        .logo { font-family: 'Syne'; font-size: 32px; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+/* ── LAYOUT ── */
+.app{max-width:1280px;margin:0 auto;padding:30px 24px;}
 
-        .app-grid { display: grid; grid-template-columns: 1.6fr 1.1fr; gap: 30px; }
+/* ── HEADER ── */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.logo-block{}
+.logo{font-family:var(--font-sans);font-weight:900;font-size:28px;letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:2px;margin-top:2px;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+.pill-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);
+  padding:8px 16px;border-radius:50px;cursor:pointer;font-family:var(--font-sans);font-size:13px;font-weight:600;
+  transition:all .25s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.pill-btn:hover{border-color:var(--border-bright);color:var(--text);background:rgba(124,92,252,0.1);}
+.pill-btn.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;}
 
-        /* Glassmorphism */
-        .glass-card { background: var(--card); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; padding: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); transition: 0.4s; }
-        .glass-card:hover { border-color: rgba(255,255,255,0.15); }
+/* ── NLP STRIP ── */
+.nlp-strip{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 24px;margin-bottom:28px;position:relative;overflow:hidden;}
+.nlp-strip::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));opacity:0.7;}
+.nlp-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:2px;margin-bottom:12px;}
+.nlp-row{display:flex;gap:12px;align-items:center;}
+.nlp-input{flex:1;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:14px 18px;color:var(--text);font-family:var(--font-sans);font-size:15px;outline:none;transition:all .3s;}
+.nlp-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);}
+.nlp-input::placeholder{color:var(--muted);}
+.nlp-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+  padding:14px 24px;border-radius:var(--r-sm);font-weight:800;cursor:pointer;
+  font-family:var(--font-sans);font-size:15px;transition:all .3s;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(124,92,252,0.4);}
+.nlp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,92,252,0.5);}
+.nlp-btn:active{transform:translateY(0);}
+.nlp-hint{font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--font-mono);}
+.nlp-hint span{color:var(--muted2);}
 
-        /* Inputs */
-        label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
-        input, select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: #fff; outline: none; margin-bottom: 20px; }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:1fr 380px;gap:24px;}
 
-        .btn-pro { background: var(--accent); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 10px 20px var(--accent-glow); }
-        .btn-pro:hover { transform: translateY(-3px); box-shadow: 0 15px 30px var(--accent); }
+/* ── TASK LIST PANEL ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.panel-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.panel-title{font-weight:800;font-size:16px;display:flex;align-items:center;gap:10px;}
+.count-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:50px;font-family:var(--font-mono);}
+.panel-tools{display:flex;gap:8px;}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted2);
+  width:32px;height:32px;border-radius:8px;cursor:pointer;display:grid;place-items:center;
+  font-size:14px;transition:all .2s;}
+.icon-btn:hover{border-color:var(--border-bright);color:var(--accent);}
 
-        /* Todo Items */
-        .todo-item { display: flex; align-items: center; gap: 20px; padding: 20px; border-bottom: 1px solid var(--border); animation: slideInUp 0.5s ease-out; }
-        .todo-item:last-child { border: none; }
-        .check { width: 28px; height: 28px; border-radius: 10px; border: 2px solid var(--accent); cursor: pointer; display: grid; place-items: center; transition: 0.3s; flex-shrink: 0; }
-        .check.checked { background: var(--accent); }
-        .check.checked::after { content: '✓'; color: #fff; font-weight: bold; }
+.filter-bar{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
+.filter-chip{background:transparent;border:1px solid var(--border);color:var(--muted2);
+  padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.filter-chip:hover,.filter-chip.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
 
-        .info { flex: 1; }
-        .title { font-weight: 600; font-size: 17px; margin-bottom: 4px; }
-        .tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--muted); margin-right: 5px; }
+.task-list{padding:0;max-height:580px;overflow-y:auto;}
+.task-list::-webkit-scrollbar{width:4px;}
+.task-list::-webkit-scrollbar-track{background:transparent;}
+.task-list::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+.empty-state{padding:60px 24px;text-align:center;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.4;}
+.empty-text{font-size:14px;line-height:1.7;}
 
-        /* Modal Settings */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; place-items: center; z-index: 1000; }
+/* ── TASK ITEM ── */
+.task-item{padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;gap:14px;transition:all .3s;position:relative;overflow:hidden;}
+.task-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .3s;}
+.task-item:hover{background:rgba(255,255,255,0.02);}
+.task-item:hover::before{opacity:1;}
+.task-item:last-child{border-bottom:none;}
+.task-item.done{opacity:0.4;}
+.task-item.done .task-title{text-decoration:line-through;}
 
-        @media (max-width: 900px) { .app-grid { grid-template-columns: 1fr; } }
-    </style>
+.check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);
+  cursor:pointer;display:grid;place-items:center;transition:all .3s;flex-shrink:0;margin-top:2px;}
+.check-box:hover{border-color:var(--accent);}
+.check-box.checked{background:var(--accent);border-color:var(--accent);}
+.check-box.checked::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+
+.task-body{flex:1;min-width:0;}
+.task-title{font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.3;}
+.task-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.meta-chip{font-size:11px;font-family:var(--font-mono);padding:3px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted2);}
+.meta-chip.cat{border-color:rgba(124,92,252,0.3);color:var(--accent);}
+.meta-chip.date{border-color:rgba(6,182,212,0.3);color:var(--accent3);}
+.meta-chip.loc{border-color:rgba(16,185,129,0.3);color:var(--green);}
+.meta-chip.urgent{border-color:rgba(239,68,68,0.4);color:var(--red);background:rgba(239,68,68,0.08);}
+.meta-chip.soon{border-color:rgba(245,158,11,0.4);color:var(--amber);background:rgba(245,158,11,0.08);}
+
+.task-actions{display:flex;gap:6px;flex-shrink:0;opacity:0;transition:opacity .2s;}
+.task-item:hover .task-actions{opacity:1;}
+.task-action-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  width:28px;height:28px;border-radius:7px;cursor:pointer;display:grid;place-items:center;font-size:13px;transition:all .2s;}
+.task-action-btn:hover{border-color:var(--border-bright);color:var(--accent);}
+.task-action-btn.del:hover{border-color:rgba(239,68,68,0.4);color:var(--red);}
+
+/* ── RIGHT PANEL ── */
+.right-col{display:flex;flex-direction:column;gap:20px;}
+
+/* ── MANUAL FORM ── */
+.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.form-panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.form-panel-title{font-weight:800;font-size:14px;}
+.form-body{padding:20px;display:none;flex-direction:column;gap:14px;}
+.form-body.open{display:flex;}
+
+.field-group{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;}
+.field-input{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-family:var(--font-sans);font-size:14px;outline:none;width:100%;transition:all .25s;}
+.field-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);}
+.field-input::placeholder{color:var(--muted);}
+select.field-input option{background:#1a1a2e;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+.time-mode-tabs{display:flex;gap:4px;background:rgba(0,0,0,0.3);border-radius:10px;padding:4px;}
+.time-tab{flex:1;padding:7px;border:none;background:transparent;color:var(--muted);
+  font-family:var(--font-sans);font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .2s;}
+.time-tab.active{background:var(--accent);color:#fff;}
+
+.period-select{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.period-opt{border:1px solid var(--border);background:transparent;color:var(--muted2);
+  padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:all .2s;text-align:center;}
+.period-opt:hover,.period-opt.active{border-color:var(--border-bright);color:var(--accent);background:rgba(124,92,252,0.1);}
+
+.reminder-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid var(--border);}
+.reminder-label{font-size:13px;font-weight:600;}
+.reminder-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:38px;height:20px;cursor:pointer;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--surface2);border-radius:50px;
+  border:1px solid var(--border);transition:all .3s;}
+.toggle input:checked+.toggle-track{background:var(--accent);border-color:var(--accent);}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;
+  border-radius:50%;transition:all .3s;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
+.toggle input:checked~.toggle-thumb{left:20px;}
+
+.submit-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+  padding:13px;border-radius:12px;font-weight:800;cursor:pointer;font-family:var(--font-sans);
+  font-size:14px;width:100%;transition:all .3s;box-shadow:0 4px 16px rgba(124,92,252,0.35);}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.5);}
+
+/* ── STATS PANEL ── */
+.stats-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.stats-title{font-size:12px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;margin-bottom:14px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.stat-val{font-size:28px;font-weight:900;font-family:var(--font-mono);}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+.stat-box.accent{border-color:rgba(124,92,252,0.3);}
+.stat-box.accent .stat-val{color:var(--accent);}
+.stat-box.green .stat-val{color:var(--green);}
+.stat-box.amber .stat-val{color:var(--amber);}
+.stat-box.cyan .stat-val{color:var(--accent3);}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface2);border:1px solid var(--border-bright);border-radius:24px;
+  width:100%;max-width:560px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;
+  animation:modalIn .3s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.modal-title{font-weight:800;font-size:16px;}
+.modal-close{background:transparent;border:1px solid var(--border);color:var(--muted);
+  width:30px;height:30px;border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:16px;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1;}
+.modal-body::-webkit-scrollbar{width:4px;}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:2px;}
+
+/* ── HISTORY ITEMS ── */
+.history-item{display:flex;align-items:center;gap:12px;padding:12px;
+  border:1px solid var(--border);border-radius:12px;margin-bottom:8px;transition:all .2s;}
+.history-item:hover{border-color:var(--border-bright);}
+.history-icon{width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);
+  border:1px solid rgba(16,185,129,0.3);display:grid;place-items:center;font-size:14px;flex-shrink:0;}
+.history-body{flex:1;min-width:0;}
+.history-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.history-meta{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--font-mono);}
+.restore-btn{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);
+  padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font-sans);}
+.restore-btn:hover{background:rgba(16,185,129,0.2);}
+
+/* ── EDIT MODAL ── */
+.edit-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.edit-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;}
+
+/* ── NOTIFICATION SETTINGS ── */
+.notif-section{margin-bottom:20px;}
+.notif-section-title{font-size:12px;font-family:var(--font-mono);color:var(--muted2);letter-spacing:1px;margin-bottom:10px;}
+.notif-option{display:flex;align-items:center;justify-content:space-between;padding:12px;
+  background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.notif-opt-lbl{font-size:13px;font-weight:600;}
+.notif-opt-sub{font-size:11px;color:var(--muted);}
+.reminder-offsets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.offset-chip{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--muted2);
+  padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.offset-chip.active{background:rgba(124,92,252,0.15);border-color:var(--border-bright);color:var(--accent);}
+
+/* ── TOAST ── */
+.toasts{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:10px;}
+.toast{background:var(--surface2);border:1px solid var(--border-bright);border-radius:14px;
+  padding:14px 18px;min-width:260px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);animation:toastIn .4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes toastIn{from{opacity:0;transform:translateX(60px);}to{opacity:1;transform:translateX(0);}}
+.toast-icon{font-size:18px;flex-shrink:0;}
+.toast-msg{font-size:13px;font-weight:600;flex:1;}
+.toast.success{border-color:rgba(16,185,129,0.4);}
+.toast.error{border-color:rgba(239,68,68,0.4);}
+.toast.info{border-color:rgba(124,92,252,0.4);}
+
+/* ── PARSE PREVIEW ── */
+.parse-preview{background:rgba(124,92,252,0.06);border:1px solid var(--border-bright);border-radius:14px;
+  padding:16px;margin-top:12px;display:none;}
+.parse-preview.show{display:block;}
+.preview-title{font-size:11px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;margin-bottom:10px;}
+.preview-task{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
+  background:rgba(0,0,0,0.3);margin-bottom:6px;font-size:13px;}
+.preview-task:last-child{margin-bottom:0;}
+.preview-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+/* ── LOADING SPINNER ── */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;
+  border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.task-item{animation:slideUp .3s ease-out;}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{padding:12px 20px;border-top:1px solid var(--border);}
+.progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .6s ease;}
+.progress-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}.right-col{order:-1;}.task-list{max-height:none;}}
+@media(max-width:600px){.nlp-row{flex-direction:column;}.nlp-btn{width:100%;}.header-actions{flex-wrap:wrap;gap:6px;}}
+</style>
 </head>
 <body>
-    <div class="mesh"></div>
-    <div class="container animate__animated animate__fadeIn">
-        <header>
-            <h1 class="logo">Neural.Todo</h1>
-            <div style="display:flex; gap:10px;">
-                <button onclick="toggleHistory()" class="tag" style="cursor:pointer; padding:10px 20px;">📜 History</button>
-                <button onclick="openSettings()" class="tag" style="cursor:pointer; padding:10px 20px;">⚙️ Settings</button>
-            </div>
-        </header>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div class="app">
 
-        <div class="app-grid">
-            <!-- Left: Smart Entry -->
-            <div class="pane">
-                <div class="glass-card animate__animated animate__fadeInLeft" style="margin-bottom: 25px;">
-                    <label>Neural NLP Input</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="ai-input" placeholder="e.g. 'Lunch next Friday afternoon and pay rent day after tomorrow'">
-                        <button onclick="parseAI()" class="btn-pro" style="width:auto; padding:0 25px;">✦</button>
-                    </div>
-                </div>
-                <div class="glass-card"><div id="todo-list"></div></div>
-            </div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo">Neural.Todo</div>
+      <div class="logo-sub">INTELLIGENT TASK ENGINE v2.0</div>
+    </div>
+    <div class="header-actions">
+      <button class="pill-btn" onclick="openHistory()">📜 History</button>
+      <button class="pill-btn" id="notif-btn" onclick="openNotifSettings()">
+        🔔 Reminders <span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </button>
+      <button class="pill-btn active" id="sync-status">⚡ Live</button>
+    </div>
+  </header>
 
-            <!-- Right: Event Architect (Manual) -->
-            <div class="pane">
-                <div class="glass-card animate__animated animate__fadeInRight">
-                    <h3 style="margin-bottom:20px; font-family:'Syne'">Event Architect</h3>
-                    <label>Task Title</label>
-                    <input type="text" id="m-title" placeholder="Manual event name">
-                    
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                        <div><label>Date</label><input type="date" id="m-date"></div>
-                        <div><label>Time</label><input type="time" id="m-time"></div>
-                    </div>
-                    
-                    <label>Scenario Category</label>
-                    <select id="m-cat">
-                        <option value="meeting">Meeting / Event</option>
-                        <option value="work">Work Project</option>
-                        <option value="finance">Finance / Bill</option>
-                        <option value="health">Health / Gym</option>
-                    </select>
-                    
-                    <button class="btn-pro" onclick="addManual()">Create Neural Task</button>
-                </div>
-            </div>
+  <!-- NLP STRIP -->
+  <div class="nlp-strip">
+    <div class="nlp-label">◈ NEURAL NLP ENGINE</div>
+    <div class="nlp-row">
+      <input type="text" class="nlp-input" id="ai-input"
+        placeholder="e.g. 'Team meeting next Friday afternoon, pay rent day after tomorrow, gym tonight 8pm…'"
+        onkeydown="if(event.key==='Enter')parseAI()">
+      <button class="nlp-btn" onclick="parseAI()" id="nlp-btn">
+        <span id="nlp-btn-text">✦ Parse</span>
+        <span class="spinner" id="nlp-spinner"></span>
+      </button>
+    </div>
+    <div class="nlp-hint">
+      Understands: <span>tomorrow, next week, May 7 afternoon, day after tomorrow, Friday evening, in 3 hours, next month, specific dates, time ranges, complex notes with multiple tasks</span>
+    </div>
+    <div class="parse-preview" id="parse-preview">
+      <div class="preview-title">◈ PARSED TASKS PREVIEW</div>
+      <div id="preview-list"></div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: TASK LIST -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Active Tasks <span class="count-badge" id="task-count">0</span></div>
+          <div class="panel-tools">
+            <button class="icon-btn" title="Sort by date" onclick="sortTasks('date')">📅</button>
+            <button class="icon-btn" title="Sort by category" onclick="sortTasks('cat')">🏷</button>
+            <button class="icon-btn" title="Clear completed" onclick="clearCompleted()">🗑</button>
+          </div>
         </div>
+        <div class="filter-bar" id="filter-bar">
+          <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-chip" onclick="setFilter('today',this)">Today</button>
+          <button class="filter-chip" onclick="setFilter('upcoming',this)">Upcoming</button>
+          <button class="filter-chip" onclick="setFilter('meeting',this)">Meeting</button>
+          <button class="filter-chip" onclick="setFilter('work',this)">Work</button>
+          <button class="filter-chip" onclick="setFilter('finance',this)">Finance</button>
+          <button class="filter-chip" onclick="setFilter('health',this)">Health</button>
+          <button class="filter-chip" onclick="setFilter('travel',this)">Travel</button>
+        </div>
+        <div class="task-list" id="task-list"></div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span>Completion</span><span id="progress-pct">0%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        </div>
+      </div>
     </div>
 
-    <!-- History Overlay -->
-    <div id="history-overlay" class="overlay" onclick="toggleHistory()">
-        <div class="glass-card" style="width:400px;" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:20px;">Archived Tasks</h3>
-            <div id="history-list"></div>
-            <button class="btn-pro" style="margin-top:20px;" onclick="toggleHistory()">Close</button>
+    <!-- RIGHT COL -->
+    <div class="right-col">
+
+      <!-- STATS -->
+      <div class="stats-panel">
+        <div class="stats-title">◈ TASK OVERVIEW</div>
+        <div class="stats-grid">
+          <div class="stat-box accent"><div class="stat-val" id="s-active">0</div><div class="stat-lbl">Active</div></div>
+          <div class="stat-box green"><div class="stat-val" id="s-done">0</div><div class="stat-lbl">Completed</div></div>
+          <div class="stat-box amber"><div class="stat-val" id="s-today">0</div><div class="stat-lbl">Due Today</div></div>
+          <div class="stat-box cyan"><div class="stat-val" id="s-upcoming">0</div><div class="stat-lbl">Upcoming</div></div>
         </div>
+      </div>
+
+      <!-- MANUAL FORM -->
+      <div class="form-panel">
+        <div class="form-panel-header">
+          <div class="form-panel-title">✚ Add Task Manually</div>
+          <button class="pill-btn" onclick="toggleForm()" id="form-toggle-btn">Open Form</button>
+        </div>
+        <div class="form-body" id="manual-form">
+          <div class="field-group">
+            <div class="field-label">TASK TITLE</div>
+            <input class="field-input" type="text" id="f-title" placeholder="Enter task title…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">LOCATION (OPTIONAL)</div>
+            <input class="field-input" type="text" id="f-loc" placeholder="Room, building, address, online…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">CATEGORY</div>
+            <select class="field-input" id="f-cat">
+              <option value="event">📅 Event</option>
+              <option value="meeting">🤝 Meeting</option>
+              <option value="work">💼 Work / Project</option>
+              <option value="deadline">⏰ Deadline</option>
+              <option value="finance">💰 Finance / Bill</option>
+              <option value="health">🏥 Health / Medical</option>
+              <option value="gym">🏋 Gym / Fitness</option>
+              <option value="shopping">🛒 Shopping</option>
+              <option value="travel">✈️ Travel</option>
+              <option value="study">📚 Study / Exam</option>
+              <option value="personal">👤 Personal</option>
+              <option value="social">🎉 Social</option>
+              <option value="general">📌 General</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">DATE</div>
+            <input class="field-input" type="date" id="f-date">
+          </div>
+          <div class="field-group">
+            <div class="field-label">TIME MODE</div>
+            <div class="time-mode-tabs">
+              <button class="time-tab active" onclick="setTimeMode('exact',this)">Exact</button>
+              <button class="time-tab" onclick="setTimeMode('period',this)">Period</button>
+              <button class="time-tab" onclick="setTimeMode('range',this)">Range</button>
+              <button class="time-tab" onclick="setTimeMode('none',this)">None</button>
+            </div>
+          </div>
+          <!-- Exact time -->
+          <div id="tm-exact">
+            <div class="field-group">
+              <div class="field-label">TIME</div>
+              <input class="field-input" type="time" id="f-time">
+            </div>
+          </div>
+          <!-- Period select -->
+          <div id="tm-period" style="display:none;">
+            <div class="field-label" style="margin-bottom:8px;">PERIOD OF DAY</div>
+            <div class="period-select">
+              <button class="period-opt" onclick="setPeriod('morning',this)">🌅 Morning</button>
+              <button class="period-opt" onclick="setPeriod('afternoon',this)">☀️ Afternoon</button>
+              <button class="period-opt" onclick="setPeriod('evening',this)">🌆 Evening</button>
+              <button class="period-opt" onclick="setPeriod('night',this)">🌙 Night</button>
+              <button class="period-opt" onclick="setPeriod('allday',this)">📆 All Day</button>
+              <button class="period-opt" onclick="setPeriod('tba',this)">❓ TBA</button>
+            </div>
+          </div>
+          <!-- Time range -->
+          <div id="tm-range" style="display:none;">
+            <div class="field-row">
+              <div class="field-group">
+                <div class="field-label">FROM</div>
+                <input class="field-input" type="time" id="f-from">
+              </div>
+              <div class="field-group">
+                <div class="field-label">TO</div>
+                <input class="field-input" type="time" id="f-to">
+              </div>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">NOTES</div>
+            <textarea class="field-input" id="f-notes" rows="2" placeholder="Extra details…" style="resize:vertical;"></textarea>
+          </div>
+          <div class="field-group">
+            <div class="field-label">PRIORITY</div>
+            <select class="field-input" id="f-priority">
+              <option value="normal">🟡 Normal</option>
+              <option value="high">🔴 High</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+          <div class="reminder-row">
+            <div>
+              <div class="reminder-label">🔔 Set Reminder</div>
+              <div class="reminder-sub">Push notification before due time</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="f-reminder" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div id="reminder-offset-wrap">
+            <div class="field-label" style="margin-bottom:8px;">REMIND ME</div>
+            <div class="reminder-offsets">
+              <button class="offset-chip" onclick="setReminderOffset(5,this)">5 min</button>
+              <button class="offset-chip active" onclick="setReminderOffset(15,this)">15 min</button>
+              <button class="offset-chip" onclick="setReminderOffset(30,this)">30 min</button>
+              <button class="offset-chip" onclick="setReminderOffset(60,this)">1 hr</button>
+              <button class="offset-chip" onclick="setReminderOffset(1440,this)">1 day</button>
+            </div>
+          </div>
+          <button class="submit-btn" onclick="addManual()">✚ Create Task</button>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
 
-    <script>
-        let todos = JSON.parse(localStorage.getItem('nt_active') || '[]');
-        let history = JSON.parse(localStorage.getItem('nt_history') || '[]');
+<!-- HISTORY MODAL -->
+<div class="overlay" id="history-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📜 Task History</div>
+      <button class="modal-close" onclick="closeHistory()">✕</button>
+    </div>
+    <div class="modal-body" id="history-body"></div>
+  </div>
+</div>
 
-        function save() {
-            localStorage.setItem('nt_active', JSON.stringify(todos));
-            localStorage.setItem('nt_history', JSON.stringify(history));
-            render();
-        }
+<!-- EDIT MODAL -->
+<div class="overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Edit Task</div>
+      <button class="modal-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="edit-field">
+        <div class="edit-label">TITLE</div>
+        <input class="field-input" type="text" id="edit-title">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">DATE</div>
+        <input class="field-input" type="date" id="edit-date">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">TIME</div>
+        <input class="field-input" type="time" id="edit-time">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">LOCATION</div>
+        <input class="field-input" type="text" id="edit-loc" placeholder="Optional">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">CATEGORY</div>
+        <select class="field-input" id="edit-cat">
+          <option value="event">📅 Event</option>
+          <option value="meeting">🤝 Meeting</option>
+          <option value="work">💼 Work / Project</option>
+          <option value="deadline">⏰ Deadline</option>
+          <option value="finance">💰 Finance / Bill</option>
+          <option value="health">🏥 Health / Medical</option>
+          <option value="gym">🏋 Gym / Fitness</option>
+          <option value="shopping">🛒 Shopping</option>
+          <option value="travel">✈️ Travel</option>
+          <option value="study">📚 Study / Exam</option>
+          <option value="personal">👤 Personal</option>
+          <option value="social">🎉 Social</option>
+          <option value="general">📌 General</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">NOTES</div>
+        <textarea class="field-input" id="edit-notes" rows="3" style="resize:vertical;"></textarea>
+      </div>
+      <div class="reminder-row" style="margin-bottom:14px;">
+        <div>
+          <div class="reminder-label">🔔 Reminder</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="edit-reminder">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+      <button class="submit-btn" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
 
-        async function parseAI() {
-            const input = document.getElementById('ai-input');
-            const res = await fetch('/api/parse', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({text: input.value})
-            });
-            const tasks = await res.json();
-            todos = [...tasks, ...todos];
-            input.value = '';
-            if(window.navigator.vibrate) window.navigator.vibrate(60);
-            save();
-        }
+<!-- NOTIFICATION SETTINGS MODAL -->
+<div class="overlay" id="notif-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔔 Notification Settings</div>
+      <button class="modal-close" onclick="closeNotif()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="notif-section">
+        <div class="notif-section-title">NOTIFICATION TYPE</div>
+        <div class="notif-option">
+          <div><div class="notif-opt-lbl">Browser Push Notifications</div><div class="notif-opt-sub">System notifications from your browser</div></div>
+          <label class="toggle"><input type="checkbox" id="ns-push" checked onchange="togglePush()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="notif-option">
+          <div><div class="notif-opt-lbl">In-App Alerts</div><div class="notif-opt-sub">Toast messages inside this app</div></div>
+          <label class="toggle"><input type="checkbox" id="ns-toast" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="notif-option">
+          <div><div class="notif-opt-lbl">Vibration (Mobile)</div><div class="notif-opt-sub">Haptic feedback on task reminders</div></div>
+          <label class="toggle"><input type="checkbox" id="ns-vibrate" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+      </div>
+      <div class="notif-section">
+        <div class="notif-section-title">DEFAULT REMINDER TIME</div>
+        <div class="reminder-offsets">
+          <button class="offset-chip" onclick="setGlobalOffset(5,this)">5 min</button>
+          <button class="offset-chip active" onclick="setGlobalOffset(15,this)">15 min</button>
+          <button class="offset-chip" onclick="setGlobalOffset(30,this)">30 min</button>
+          <button class="offset-chip" onclick="setGlobalOffset(60,this)">1 hr</button>
+          <button class="offset-chip" onclick="setGlobalOffset(120,this)">2 hr</button>
+          <button class="offset-chip" onclick="setGlobalOffset(1440,this)">1 day</button>
+        </div>
+      </div>
+      <div class="notif-section">
+        <div class="notif-section-title">STATUS</div>
+        <div class="notif-option">
+          <div><div class="notif-opt-lbl">Permission Status</div><div class="notif-opt-sub" id="notif-perm-status">Checking…</div></div>
+          <button class="pill-btn" onclick="requestNotifPermission()">Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        function addManual() {
-            const title = document.getElementById('m-title').value;
-            if(!title) return;
-            const date = document.getElementById('m-date').value;
-            const time = document.getElementById('m-time').value;
+<!-- TOAST CONTAINER -->
+<div class="toasts" id="toasts"></div>
 
-            const task = {
-                id: Date.now(),
-                title: title,
-                due_date: date && time ? `${date}T${time}` : null,
-                category: document.getElementById('m-cat').value,
-                completed: false
-            };
-            todos.unshift(task);
-            save();
-        }
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let todos = JSON.parse(localStorage.getItem('nt2_active') || '[]');
+let history = JSON.parse(localStorage.getItem('nt2_history') || '[]');
+let activeFilter = 'all';
+let currentPeriod = null;
+let currentTimeMode = 'exact';
+let currentReminderOffset = 15;
+let globalReminderOffset = 15;
+let settings = JSON.parse(localStorage.getItem('nt2_settings') || '{"push":true,"toast":true,"vibrate":true,"offset":15}');
 
-        function completeTask(id) {
-            const task = todos.find(t => t.id === id);
-            history.unshift(task);
-            todos = todos.filter(t => t.id !== id);
-            if(window.navigator.vibrate) window.navigator.vibrate([40, 30, 40]);
-            save();
-        }
+// ── SAVE & RENDER ──────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('nt2_active', JSON.stringify(todos));
+  localStorage.setItem('nt2_history', JSON.stringify(history));
+  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+  render();
+}
 
-        function toggleHistory() {
-            const overlay = document.getElementById('history-overlay');
-            overlay.style.display = overlay.style.display === 'grid' ? 'none' : 'grid';
-            renderHistory();
-        }
+function getCatIcon(cat) {
+  const icons = {event:'📅',meeting:'🤝',work:'💼',deadline:'⏰',finance:'💰',health:'🏥',gym:'🏋',shopping:'🛒',travel:'✈️',study:'📚',personal:'👤',social:'🎉',general:'📌'};
+  return icons[cat] || '📌';
+}
 
-        // Notification Engine
-        setInterval(() => {
-            const now = new Date().getTime();
-            todos.forEach(t => {
-                if(t.due_date && !t.reminded) {
-                    const taskTime = new Date(t.due_date).getTime();
-                    if(taskTime - now < 60000 && taskTime > now) {
-                        new Notification(`Neural Reminder: ${t.title}`);
-                        t.reminded = true;
-                    }
-                }
-            });
-        }, 20000);
+function formatDate(iso) {
+  if(!iso) return null;
+  const d = new Date(iso);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const taskDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = (taskDay - today) / 86400000;
+  let label = '';
+  if(diff === 0) label = 'Today';
+  else if(diff === 1) label = 'Tomorrow';
+  else if(diff === -1) label = 'Yesterday';
+  else label = d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+  const time = d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+  return `${label} ${time !== '00:00' ? '· '+time : ''}`.trim();
+}
 
-        function render() {
-            const list = document.getElementById('todo-list');
-            list.innerHTML = todos.length === 0 ? '<p style="color:var(--muted); text-align:center;">No neural tasks.</p>' :
-            todos.map(t => `
-                <div class="todo-item">
-                    <div class="check" onclick="completeTask(${t.id})"></div>
-                    <div class="info">
-                        <div class="title">${t.title}</div>
-                        <span class="tag">${t.category}</span>
-                        <span class="tag" style="background:rgba(255,255,255,0.02)">📅 ${t.due_date ? new Date(t.due_date).toLocaleString() : 'No Time'}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
+function isToday(iso) {
+  if(!iso) return false;
+  const d = new Date(iso);
+  const n = new Date();
+  return d.toDateString() === n.toDateString();
+}
+function isUpcoming(iso) {
+  if(!iso) return false;
+  const d = new Date(iso);
+  const n = new Date();
+  return d > n && !isToday(iso);
+}
+function isUrgent(iso) {
+  if(!iso) return false;
+  const diff = new Date(iso) - new Date();
+  return diff > 0 && diff < 3600000;
+}
+function isSoon(iso) {
+  if(!iso) return false;
+  const diff = new Date(iso) - new Date();
+  return diff > 0 && diff < 86400000 && !isUrgent(iso);
+}
 
-        function renderHistory() {
-            const hl = document.getElementById('history-list');
-            hl.innerHTML = history.map(t => `<div class="todo-item"><div class="info">${t.title}</div></div>`).join('');
-        }
+function getFilteredTodos() {
+  switch(activeFilter) {
+    case 'today': return todos.filter(t => isToday(t.due_date));
+    case 'upcoming': return todos.filter(t => isUpcoming(t.due_date));
+    case 'meeting': case 'work': case 'finance': case 'health': case 'travel':
+      return todos.filter(t => t.category === activeFilter || t.category.startsWith(activeFilter));
+    default: return todos;
+  }
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            render();
-            if(Notification.permission !== 'granted') Notification.requestPermission();
-        });
-    </script>
+function render() {
+  const filtered = getFilteredTodos();
+  const list = document.getElementById('task-list');
+  document.getElementById('task-count').textContent = filtered.length;
+
+  if(filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-text">No tasks here.<br>Parse a note or add one manually.</div></div>`;
+  } else {
+    list.innerHTML = filtered.map(t => {
+      const dateStr = t.period ? `${['🌅','☀️','🌆','🌙','📆','❓'][['morning','afternoon','evening','night','allday','tba'].indexOf(t.period)] || '🕐'} ${t.period.charAt(0).toUpperCase()+t.period.slice(1)}` : (t.due_date ? formatDate(t.due_date) : null);
+      return `<div class="task-item${t.completed?' done':''}" id="ti-${t.id}">
+        <div class="check-box${t.completed?' checked':''}" onclick="toggleDone(${t.id})"></div>
+        <div class="task-body">
+          <div class="task-title">${getCatIcon(t.category)} ${t.title}</div>
+          <div class="task-meta">
+            <span class="meta-chip cat">${t.category}</span>
+            ${dateStr ? `<span class="meta-chip date ${isUrgent(t.due_date)?'urgent':isSoon(t.due_date)?'soon':''}">${isUrgent(t.due_date)?'🚨 ':isSoon(t.due_date)?'⚡ ':'📅 '}${dateStr}</span>` : ''}
+            ${t.location ? `<span class="meta-chip loc">📍 ${t.location}</span>` : ''}
+            ${t.priority === 'high' ? `<span class="meta-chip urgent">HIGH</span>` : ''}
+            ${t.reminder ? `<span class="meta-chip" style="border-color:rgba(124,92,252,0.3);color:var(--accent)">🔔 ${t.reminderOffset||15}m</span>` : ''}
+          </div>
+          ${t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;">${t.notes}</div>` : ''}
+        </div>
+        <div class="task-actions">
+          <button class="task-action-btn" onclick="openEdit(${t.id})" title="Edit">✏️</button>
+          <button class="task-action-btn del" onclick="deleteTask(${t.id})" title="Delete">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Stats
+  const now = new Date();
+  const todayCount = todos.filter(t => isToday(t.due_date) && !t.completed).length;
+  const upcomingCount = todos.filter(t => isUpcoming(t.due_date) && !t.completed).length;
+  const doneCount = todos.filter(t => t.completed).length;
+  document.getElementById('s-active').textContent = todos.filter(t=>!t.completed).length;
+  document.getElementById('s-done').textContent = doneCount;
+  document.getElementById('s-today').textContent = todayCount;
+  document.getElementById('s-upcoming').textContent = upcomingCount;
+
+  const total = todos.length;
+  const pct = total ? Math.round((doneCount/total)*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+// ── NLP PARSE ──────────────────────────────────────────────────────────────
+async function parseAI() {
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if(!text) return;
+
+  // Show spinner
+  document.getElementById('nlp-btn-text').style.display = 'none';
+  document.getElementById('nlp-spinner').style.display = 'inline-block';
+
+  try {
+    const res = await fetch('/api/parse', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text})
+    });
+    if(!res.ok) throw new Error('Server error');
+    const tasks = await res.json();
+
+    // Show preview
+    const preview = document.getElementById('parse-preview');
+    const plist = document.getElementById('preview-list');
+    plist.innerHTML = tasks.map(t =>
+      `<div class="preview-task"><div class="preview-dot"></div><strong>${getCatIcon(t.category)} ${t.title}</strong>&nbsp;<span style="color:var(--muted);font-size:12px;">${t.due_date ? '· '+formatDate(t.due_date) : ''}</span></div>`
+    ).join('');
+    preview.classList.add('show');
+
+    todos = [...tasks, ...todos];
+    input.value = '';
+    vibrate([40,20,40]);
+    toast('✦ Parsed ' + tasks.length + ' task(s)', 'success');
+    save();
+
+    setTimeout(() => preview.classList.remove('show'), 4000);
+  } catch(e) {
+    toast('⚠ Could not reach server. Add task manually.', 'error');
+  } finally {
+    document.getElementById('nlp-btn-text').style.display = '';
+    document.getElementById('nlp-spinner').style.display = 'none';
+  }
+}
+
+// ── MANUAL FORM ────────────────────────────────────────────────────────────
+function toggleForm() {
+  const form = document.getElementById('manual-form');
+  const btn = document.getElementById('form-toggle-btn');
+  const isOpen = form.classList.contains('open');
+  form.classList.toggle('open', !isOpen);
+  btn.textContent = isOpen ? 'Open Form' : 'Close Form';
+}
+
+function setTimeMode(mode, el) {
+  currentTimeMode = mode;
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tm-exact').style.display = mode === 'exact' ? 'block' : 'none';
+  document.getElementById('tm-period').style.display = mode === 'period' ? 'block' : 'none';
+  document.getElementById('tm-range').style.display = mode === 'range' ? 'block' : 'none';
+}
+
+function setPeriod(p, el) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setReminderOffset(val, el) {
+  currentReminderOffset = val;
+  document.querySelectorAll('#reminder-offset-wrap .offset-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function addManual() {
+  const title = document.getElementById('f-title').value.trim();
+  if(!title) { toast('Please enter a task title', 'error'); return; }
+
+  const date = document.getElementById('f-date').value;
+  let dueDate = null;
+  let period = null;
+
+  if(currentTimeMode === 'exact') {
+    const time = document.getElementById('f-time').value;
+    if(date) dueDate = time ? `${date}T${time}` : `${date}T00:00`;
+  } else if(currentTimeMode === 'period') {
+    const hours = {morning:'08:00',afternoon:'14:00',evening:'18:00',night:'21:00',allday:'00:00',tba:'00:00'};
+    if(date && currentPeriod && currentPeriod !== 'tba') dueDate = `${date}T${hours[currentPeriod]||'09:00'}`;
+    else if(date) dueDate = `${date}T00:00`;
+    period = currentPeriod;
+  } else if(currentTimeMode === 'range') {
+    const from = document.getElementById('f-from').value;
+    if(date && from) dueDate = `${date}T${from}`;
+    if(date && document.getElementById('f-to').value) {
+      // Store range as notes addendum
+    }
+  }
+
+  const task = {
+    id: Date.now(),
+    title,
+    due_date: dueDate,
+    period,
+    location: document.getElementById('f-loc').value.trim(),
+    category: document.getElementById('f-cat').value,
+    notes: document.getElementById('f-notes').value.trim(),
+    priority: document.getElementById('f-priority').value,
+    reminder: document.getElementById('f-reminder').checked,
+    reminderOffset: currentReminderOffset,
+    completed: false,
+    reminded: false,
+    source: 'manual'
+  };
+  todos.unshift(task);
+  vibrate([30]);
+  toast(`✚ "${title}" added`, 'success');
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-loc').value = '';
+  document.getElementById('f-notes').value = '';
+  save();
+}
+
+// ── TASK ACTIONS ───────────────────────────────────────────────────────────
+function toggleDone(id) {
+  const t = todos.find(t => t.id === id);
+  if(!t) return;
+  t.completed = !t.completed;
+  if(t.completed) {
+    history.unshift({...t, completedAt: new Date().toISOString()});
+    todos = todos.filter(x => x.id !== id);
+    vibrate([40,20,40,20,60]);
+    toast('✓ Task completed', 'success');
+  }
+  save();
+}
+
+function deleteTask(id) {
+  todos = todos.filter(t => t.id !== id);
+  toast('🗑 Task deleted', 'info');
+  save();
+}
+
+function clearCompleted() {
+  const done = todos.filter(t => t.completed);
+  done.forEach(t => history.unshift({...t, completedAt: new Date().toISOString()}));
+  todos = todos.filter(t => !t.completed);
+  toast(`Cleared ${done.length} completed task(s)`, 'info');
+  save();
+}
+
+function sortTasks(by) {
+  if(by === 'date') todos.sort((a,b) => new Date(a.due_date||'9999') - new Date(b.due_date||'9999'));
+  else if(by === 'cat') todos.sort((a,b) => a.category.localeCompare(b.category));
+  save();
+}
+
+// ── FILTER ─────────────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ── EDIT ───────────────────────────────────────────────────────────────────
+function openEdit(id) {
+  const t = todos.find(t => t.id === id);
+  if(!t) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-title').value = t.title;
+  document.getElementById('edit-loc').value = t.location || '';
+  document.getElementById('edit-notes').value = t.notes || '';
+  document.getElementById('edit-cat').value = t.category;
+  document.getElementById('edit-reminder').checked = t.reminder || false;
+  if(t.due_date) {
+    const d = new Date(t.due_date);
+    document.getElementById('edit-date').value = d.toISOString().split('T')[0];
+    document.getElementById('edit-time').value = d.toTimeString().slice(0,5);
+  } else {
+    document.getElementById('edit-date').value = '';
+    document.getElementById('edit-time').value = '';
+  }
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEdit() { document.getElementById('edit-modal').classList.remove('open'); }
+
+function saveEdit() {
+  const id = parseInt(document.getElementById('edit-id').value);
+  const t = todos.find(t => t.id === id);
+  if(!t) return;
+  t.title = document.getElementById('edit-title').value;
+  t.location = document.getElementById('edit-loc').value;
+  t.notes = document.getElementById('edit-notes').value;
+  t.category = document.getElementById('edit-cat').value;
+  t.reminder = document.getElementById('edit-reminder').checked;
+  t.reminded = false;
+  const date = document.getElementById('edit-date').value;
+  const time = document.getElementById('edit-time').value;
+  t.due_date = date ? (time ? `${date}T${time}` : `${date}T00:00`) : null;
+  closeEdit();
+  toast('✓ Task updated', 'success');
+  save();
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────
+function openHistory() {
+  const body = document.getElementById('history-body');
+  if(history.length === 0) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-text">No completed tasks yet.</div></div>';
+  } else {
+    body.innerHTML = history.map(t => `
+      <div class="history-item">
+        <div class="history-icon">${getCatIcon(t.category)}</div>
+        <div class="history-body">
+          <div class="history-title">${t.title}</div>
+          <div class="history-meta">${t.category} · ${t.completedAt ? new Date(t.completedAt).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'Completed'}</div>
+        </div>
+        <button class="restore-btn" onclick="restoreTask(${t.id})">↩ Restore</button>
+      </div>
+    `).join('');
+  }
+  document.getElementById('history-modal').classList.add('open');
+}
+function closeHistory() { document.getElementById('history-modal').classList.remove('open'); }
+
+function restoreTask(id) {
+  const t = history.find(h => h.id === id);
+  if(!t) return;
+  const restored = {...t, completed: false, reminded: false};
+  delete restored.completedAt;
+  todos.unshift(restored);
+  history = history.filter(h => h.id !== id);
+  closeHistory();
+  toast('↩ Task restored', 'success');
+  save();
+}
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────────────────
+function openNotifSettings() {
+  document.getElementById('notif-modal').classList.add('open');
+  document.getElementById('ns-push').checked = settings.push;
+  document.getElementById('ns-toast').checked = settings.toast;
+  document.getElementById('ns-vibrate').checked = settings.vibrate;
+  const perm = Notification.permission;
+  document.getElementById('notif-perm-status').textContent = 
+    perm === 'granted' ? '✅ Granted — notifications active' :
+    perm === 'denied' ? '❌ Denied — check browser settings' : '⚠ Not yet requested';
+}
+function closeNotif() { document.getElementById('notif-modal').classList.remove('open'); }
+
+function togglePush() {
+  settings.push = document.getElementById('ns-push').checked;
+  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+}
+function setGlobalOffset(val, el) {
+  globalReminderOffset = val;
+  settings.offset = val;
+  document.querySelectorAll('#notif-modal .offset-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  localStorage.setItem('nt2_settings', JSON.stringify(settings));
+}
+
+async function requestNotifPermission() {
+  const p = await Notification.requestPermission();
+  document.getElementById('notif-perm-status').textContent =
+    p === 'granted' ? '✅ Granted — notifications active' : '❌ Permission denied';
+  if(p === 'granted') {
+    document.getElementById('notif-dot').style.display = 'none';
+    toast('🔔 Notifications enabled!', 'success');
+  }
+}
+
+function vibrate(pattern) {
+  if(settings.vibrate && navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ── REMINDER ENGINE ────────────────────────────────────────────────────────
+function checkReminders() {
+  const now = Date.now();
+  todos.forEach(t => {
+    if(!t.due_date || t.reminded || t.completed) return;
+    const taskMs = new Date(t.due_date).getTime();
+    const offset = (t.reminderOffset || settings.offset || 15) * 60000;
+    const target = taskMs - offset;
+    if(now >= target && now < taskMs) {
+      triggerReminder(t);
+      t.reminded = true;
+      save();
+    }
+  });
+}
+
+function triggerReminder(task) {
+  if(settings.toast) toast(`🔔 Reminder: ${task.title}`, 'info');
+  if(settings.push && Notification.permission === 'granted') {
+    new Notification('Neural.Todo Reminder', {
+      body: `${getCatIcon(task.category)} ${task.title}\n${task.due_date ? new Date(task.due_date).toLocaleString() : ''}`,
+      icon: '/favicon.ico',
+      tag: 'task-'+task.id
+    });
+  }
+  if(settings.vibrate) vibrate([100,50,100,50,200]);
+}
+
+setInterval(checkReminders, 30000);
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  if(!settings.toast && type !== 'error') return;
+  const icons = {success:'✅', error:'⚠️', info:'💡'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+  if(Notification.permission === 'default') {
+    document.getElementById('notif-dot').style.display = 'inline-block';
+  }
+  document.getElementById('notif-perm-status') && (document.getElementById('notif-perm-status').textContent = Notification.permission);
+
+  // Load settings toggles
+  document.getElementById('ns-push').checked = settings.push;
+  document.getElementById('ns-toast').checked = settings.toast;
+  document.getElementById('ns-vibrate').checked = settings.vibrate;
+});
+
+// Close modals on overlay click
+['history-modal','notif-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if(e.target === this) this.classList.remove('open');
+  });
+});
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if(e.target === this) closeEdit();
+});
+</script>
 </body>
 </html>
