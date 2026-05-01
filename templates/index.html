@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neural.Todo">
+<meta name="theme-color" content="#080810">
 <title>Smart Todo — Intelligent Task Engine</title>
+<link rel="manifest" id="pwa-manifest">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -293,8 +299,32 @@ select.field-input option{background:#1a1a2e;}
 .toast.error{border-color:rgba(239,68,68,0.4);}
 .toast.info{border-color:rgba(124,92,252,0.4);}
 
-/* ── PARSE PREVIEW ── */
-.parse-preview{background:rgba(124,92,252,0.06);border:1px solid var(--border-bright);border-radius:14px;
+/* ── PWA INSTALL BANNER ── */
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:3000;
+  background:linear-gradient(135deg,rgba(14,14,26,0.97),rgba(19,19,31,0.97));
+  border-top:1px solid var(--border-bright);backdrop-filter:blur(20px);
+  padding:18px 20px 28px;display:flex;align-items:center;gap:14px;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 -10px 40px rgba(0,0,0,0.5);}
+.pwa-banner.show{transform:translateY(0);}
+.pwa-banner-icon{width:48px;height:48px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-size:24px;box-shadow:0 4px 16px rgba(124,92,252,0.4);}
+.pwa-banner-body{flex:1;min-width:0;}
+.pwa-banner-title{font-weight:800;font-size:15px;margin-bottom:3px;}
+.pwa-banner-sub{font-size:12px;color:var(--muted);line-height:1.4;}
+.pwa-banner-actions{display:flex;gap:8px;flex-shrink:0;}
+.pwa-install-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+  padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;
+  font-family:var(--font-sans);box-shadow:0 4px 14px rgba(124,92,252,0.4);white-space:nowrap;}
+.pwa-dismiss-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;
+  font-family:var(--font-sans);}
+.pwa-ios-tip{font-size:11px;color:var(--muted2);margin-top:6px;font-family:var(--font-mono);}
+
+/* ── MISSED SECTION TOP ── */
+.missed-section-top{border-bottom:1px solid rgba(239,68,68,0.2);margin-bottom:0;}
+
   padding:16px;margin-top:12px;display:none;}
 .parse-preview.show{display:block;}
 .preview-title{font-size:11px;font-family:var(--font-mono);color:var(--accent);letter-spacing:1.5px;margin-bottom:10px;}
@@ -321,6 +351,11 @@ select.field-input option{background:#1a1a2e;}
 /* ── RESPONSIVE ── */
 @media(max-width:900px){.main-grid{grid-template-columns:1fr;}.right-col{order:-1;}.task-list{max-height:none;}}
 @media(max-width:600px){.nlp-row{flex-direction:column;}.nlp-btn{width:100%;}.header-actions{flex-wrap:wrap;gap:6px;}}
+/* iOS safe areas */
+@supports(padding-bottom:env(safe-area-inset-bottom)){
+  .pwa-banner{padding-bottom:calc(18px + env(safe-area-inset-bottom));}
+  .app{padding-bottom:calc(30px + env(safe-area-inset-bottom));}
+}
 </style>
 </head>
 <body>
@@ -356,7 +391,7 @@ select.field-input option{background:#1a1a2e;}
       </button>
     </div>
     <div class="nlp-hint">
-      Understands: <span>tomorrow, next week, May 7 afternoon, WEDS 6 MAY 17.00-18.30, IN SEMINARRAUM H (015), multiple tasks in one paste, course announcements, deadlines. Press Ctrl+Enter to parse.</span>
+      Understands: <span>tomorrow, day after tomorrow, next week, coming days, this weekend, end of week, fortnight, in a couple days, May 7 afternoon, WEDS 6 MAY 17.00-18.30, IN SEMINARRAUM H (015), multiple tasks in one paste, course announcements, deadlines. Press Ctrl+Enter to parse.</span>
     </div>
     <div class="parse-preview" id="parse-preview">
       <div class="preview-title">◈ PARSED TASKS PREVIEW</div>
@@ -388,16 +423,17 @@ select.field-input option{background:#1a1a2e;}
           <button class="filter-chip" onclick="setFilter('health',this)">Health</button>
           <button class="filter-chip" onclick="setFilter('travel',this)">Travel</button>
         </div>
-        <div class="task-list" id="task-list"></div>
-
-        <!-- MISSED TASKS SECTION -->
-        <div class="missed-section" id="missed-section" style="display:none;">
+        <!-- MISSED TASKS SECTION — TOP -->
+        <div class="missed-section missed-section-top" id="missed-section" style="display:none;">
           <div class="missed-header" onclick="toggleMissed()">
             <div class="missed-title">⚠ MISSED / OVERDUE <span class="count-badge red" id="missed-count">0</span></div>
             <span style="color:var(--muted);font-size:12px;" id="missed-toggle-icon">▼ Show</span>
           </div>
           <div class="missed-list" id="missed-list"></div>
         </div>
+
+        <div class="task-list" id="task-list"></div>
+
 
         <div class="progress-wrap">
           <div class="progress-label">
@@ -437,6 +473,20 @@ select.field-input option{background:#1a1a2e;}
     <div class="vibrate-alert-task" id="vibrate-alert-task">—</div>
   </div>
   <button class="vibrate-alert-dismiss" onclick="dismissVibrateAlert()">Dismiss</button>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div class="pwa-banner" id="pwa-banner">
+  <div class="pwa-banner-icon">✦</div>
+  <div class="pwa-banner-body">
+    <div class="pwa-banner-title">Add Neural.Todo to Home Screen</div>
+    <div class="pwa-banner-sub">Install as an app — works offline, full screen, no browser bar.</div>
+    <div class="pwa-ios-tip" id="pwa-ios-tip" style="display:none;">📲 Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong></div>
+  </div>
+  <div class="pwa-banner-actions">
+    <button class="pwa-dismiss-btn" onclick="dismissPWA()">Later</button>
+    <button class="pwa-install-btn" id="pwa-install-btn" onclick="installPWA()">Install</button>
+  </div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -619,7 +669,7 @@ select.field-input option{background:#1a1a2e;}
       <div class="notif-section">
         <div class="notif-section-title">NOTIFICATION TYPE</div>
         <div class="notif-option">
-          <div><div class="notif-opt-lbl">Browser Push Notifications</div><div class="notif-opt-sub">System notifications from your browser</div></div>
+          <div><div class="notif-opt-lbl">🔔 Native Push Notifications</div><div class="notif-opt-sub">OS-level alerts — appear outside the app, on lock screen</div></div>
           <label class="toggle"><input type="checkbox" id="ns-push" checked onchange="saveSetting('push',this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
         </div>
         <div class="notif-option">
@@ -744,15 +794,19 @@ function detectPreciseLocation(locText) {
 }
 
 function getMapsUrl(locText) {
-  // Check for explicit street addresses (bauhausstr, etc)
-  const streetMatch = locText.match(/\b([A-Za-zäöüÄÖÜß]+str(?:asse)?\.?\s*\d+[^\n,]*)/i);
-  if(streetMatch) {
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(streetMatch[1]+', Weimar')}`;
-  }
-  // Seminarraum with building number
-  const roomMatch = locText.match(/\b(seminarraum\s+[A-Z0-9][^\n,\.]*)/i);
-  if(roomMatch) return null; // internal location, can't map precisely
-  return null;
+  if(!locText || locText.toLowerCase() === 'online') return null;
+  const loc = locText.trim();
+
+  // Skip purely virtual locations
+  if(/\b(zoom|teams|online|virtual|remote|skype|meet\.google|webex)\b/i.test(loc)) return null;
+
+  // Named landmark / exact address — always try to map it
+  // Append city context if it looks like a building/room name without a full address
+  const hasStreet = /str(asse)?\.?\s*\d+|\d+\s+[A-Za-z]/i.test(loc);
+  const hasPostal = /\b\d{5}\b/.test(loc);
+  const query = (hasStreet || hasPostal) ? loc : loc + ', Weimar, Germany';
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
@@ -780,7 +834,7 @@ function buildTaskHtml(t, isMissedTask=false) {
   if(t.location) {
     const mapsUrl = getMapsUrl(t.location);
     if(mapsUrl) {
-      locChip = `<a class="meta-chip loc" href="${mapsUrl}" target="_blank" title="Open in Google Maps">📍 ${t.location} 🗺</a>`;
+      locChip = `<a class="meta-chip loc" href="${mapsUrl}" target="_blank" rel="noopener" title="Open in Maps">📍 ${t.location} 🗺</a>`;
     } else {
       locChip = `<span class="meta-chip loc">📍 ${t.location}</span>`;
     }
@@ -904,9 +958,51 @@ function parseDateFromText(text, now) {
   const tNorm = normalizeOrdinals(t);
   let result = null;
 
-  // "day after tomorrow"
-  if(/day after tomorrow/.test(t)) result = new Date(now.getTime() + 2*86400000);
+  // ── COLLOQUIAL / LOCAL ENGLISH EXPANSIONS ──────────────────────────────────
+  // "the day after tomorrow" / "day after tomm" / "overmorrow"
+  if(/\b(the\s+)?day after tom(orrow)?\b|overmorrow/.test(t)) result = new Date(now.getTime() + 2*86400000);
+  // "day after tomorrow" (without "the")
+  else if(/day after tomorrow/.test(t)) result = new Date(now.getTime() + 2*86400000);
   else if(/day before yesterday/.test(t)) result = new Date(now.getTime() - 2*86400000);
+  // "couple of days" / "in a couple days" → 2 days
+  else if(/\bin (a )?couple(?: of)? days?\b/.test(t)) result = new Date(now.getTime() + 2*86400000);
+  // "few days" / "in a few days" → 3 days
+  else if(/\bin (a )?few days?\b/.test(t)) result = new Date(now.getTime() + 3*86400000);
+  // "coming days" / "coming few days" → 2 days
+  else if(/\bcoming (few |next )?days?\b/.test(t)) result = new Date(now.getTime() + 2*86400000);
+  // "next coming days" / "in the coming days" → 3 days
+  else if(/\b(next\s+)?coming (days?|week)\b/.test(t)) result = new Date(now.getTime() + 3*86400000);
+  // "end of the week" / "end of week" → this Sunday
+  else if(/\bend of (the )?week\b/.test(t)) {
+    const d = new Date(now); d.setDate(now.getDate() + (7 - now.getDay())); result = d;
+  }
+  // "start of next week" / "beginning of next week" → next Monday
+  else if(/\b(start|beginning) of next week\b/.test(t)) {
+    const d = new Date(now); const daysUntilMon = (8 - now.getDay()) % 7 || 7;
+    d.setDate(now.getDate() + daysUntilMon); result = d;
+  }
+  // "sometime this week" → 3 days
+  else if(/\bsometime this week\b/.test(t)) result = new Date(now.getTime() + 3*86400000);
+  // "later today" / "later on" → in 3 hours
+  else if(/\blater (today|on)?\b/.test(t)) result = new Date(now.getTime() + 3*3600000);
+  // "soon" → 1 hour from now
+  else if(/\bvery soon\b/.test(t)) result = new Date(now.getTime() + 1*3600000);
+  else if(/\b(real|really|super)\s+soon\b/.test(t)) result = new Date(now.getTime() + 2*3600000);
+  // "this weekend" → Saturday
+  else if(/\bthis weekend\b/.test(t)) {
+    const d = new Date(now); const daysToSat = (6 - now.getDay() + 7) % 7 || 7;
+    d.setDate(now.getDate() + daysToSat); result = d;
+  }
+  // "next weekend" → next Saturday
+  else if(/\bnext weekend\b/.test(t)) {
+    const d = new Date(now); const daysToSat = (6 - now.getDay() + 7) % 7 || 7;
+    d.setDate(now.getDate() + daysToSat + 7); result = d;
+  }
+  // "fortnight" / "in a fortnight" → 14 days
+  else if(/\b(in a )?fortnight\b/.test(t)) result = new Date(now.getTime() + 14*86400000);
+  // "in a week" / "in a week's time" → 7 days
+  else if(/\bin (a|one) week'?s?( time)?\b/.test(t)) result = new Date(now.getTime() + 7*86400000);
+  // standard
   else if(/\byesterday\b/.test(t)) result = new Date(now.getTime() - 86400000);
   else if(/\btoday\b|\bthis (morning|afternoon|evening|night)\b/.test(t)) result = new Date(now);
   else if(/\btomorrow\b/.test(t)) result = new Date(now.getTime() + 86400000);
@@ -1549,19 +1645,41 @@ function checkReminders() {
 }
 
 function triggerReminder(task) {
-  if(settings.toast) toast(`🔔 ${task.title.slice(0,50)}`, 'info');
+  const title = task.title.slice(0, 50);
+  const body = `${getCatIcon(task.category)} ${task.title}\n${task.due_date ? new Date(task.due_date).toLocaleString('en-GB') : ''}`;
+
+  // 1. Native OS notification via Service Worker (out-of-app, shows on lock screen)
   if(settings.push && Notification.permission === 'granted') {
-    new Notification('Neural.Todo Reminder', {
-      body: `${getCatIcon(task.category)} ${task.title}\n${task.due_date ? new Date(task.due_date).toLocaleString('en-GB') : ''}`,
-      icon: '/favicon.ico',
-      tag: 'task-'+task.id
-    });
+    if(swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        title: '🔔 Neural.Todo Reminder',
+        body: body,
+        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%237c5cfc'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white'%3E✦%3C/text%3E%3C/svg%3E",
+        tag: 'task-' + task.id,
+        requireInteraction: settings.persistent !== false,
+        vibrate: settings.vibrate ? [300, 100, 300, 100, 500] : [],
+        taskId: task.id
+      });
+    } else {
+      // Fallback direct notification
+      new Notification('🔔 Neural.Todo Reminder', {
+        body: body,
+        tag: 'task-' + task.id,
+        requireInteraction: settings.persistent !== false
+      });
+    }
   }
+
+  // 2. In-app vibrate alert (persistent until dismissed)
   if(settings.persistent !== false) {
     showVibrateAlert(task);
   } else if(settings.vibrate) {
-    vibrate([100,50,100,50,200]);
+    vibrate([100, 50, 100, 50, 200]);
   }
+
+  // 3. In-app toast
+  if(settings.toast) toast(`🔔 ${title}`, 'info');
 }
 
 setInterval(checkReminders, 30000);
@@ -1576,6 +1694,117 @@ function toast(msg, type = 'info') {
   document.getElementById('toasts').appendChild(t);
   setTimeout(() => t.remove(), 4000);
 }
+
+// ── PWA MANIFEST (inline blob) ─────────────────────────────────────────────
+(function() {
+  const manifest = {
+    name: 'Neural.Todo',
+    short_name: 'Neural.Todo',
+    description: 'Intelligent Task Engine',
+    start_url: './',
+    display: 'standalone',
+    background_color: '#080810',
+    theme_color: '#080810',
+    orientation: 'portrait-primary',
+    icons: [
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%237c5cfc'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white'%3E✦%3C/text%3E%3C/svg%3E", sizes: '192x192', type: 'image/svg+xml' },
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%237c5cfc'/%3E%3Ctext x='256' y='350' font-size='300' text-anchor='middle' fill='white'%3E✦%3C/text%3E%3C/svg%3E", sizes: '512x512', type: 'image/svg+xml' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+})();
+
+// ── SERVICE WORKER REGISTRATION ────────────────────────────────────────────
+// Inline SW as blob so it works from file:// and any server
+const SW_CODE = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('message', e => {
+  if(e.data && e.data.type === 'SHOW_NOTIFICATION') {
+    const d = e.data;
+    self.registration.showNotification(d.title, {
+      body: d.body,
+      icon: d.icon,
+      tag: d.tag,
+      requireInteraction: d.requireInteraction || false,
+      vibrate: d.vibrate || [200,100,200],
+      data: { taskId: d.taskId }
+    });
+  }
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window'}).then(list => {
+    if(list.length) return list[0].focus();
+    return clients.openWindow('./');
+  }));
+});
+`;
+let swRegistration = null;
+if('serviceWorker' in navigator) {
+  const swBlob = new Blob([SW_CODE], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl, {scope:'./'})
+    .then(r => { swRegistration = r; console.log('SW registered'); })
+    .catch(e => console.warn('SW failed:', e));
+}
+
+// ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+let deferredInstallPrompt = null;
+const PWA_KEY = 'pwa_install_dismissed';
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(!localStorage.getItem(PWA_KEY) && !isInStandaloneMode()) {
+    setTimeout(() => {
+      document.getElementById('pwa-banner').classList.add('show');
+    }, 2000);
+  }
+});
+
+function installPWA() {
+  if(deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(r => {
+      if(r.outcome === 'accepted') {
+        localStorage.setItem(PWA_KEY, '1');
+        document.getElementById('pwa-banner').classList.remove('show');
+        toast('✦ App installed!', 'success');
+      }
+      deferredInstallPrompt = null;
+    });
+  }
+}
+
+function dismissPWA() {
+  localStorage.setItem(PWA_KEY, '1');
+  document.getElementById('pwa-banner').classList.remove('show');
+}
+
+// Show iOS tip if needed
+window.addEventListener('load', () => {
+  if(isIOS() && !isInStandaloneMode() && !localStorage.getItem(PWA_KEY)) {
+    const btn = document.getElementById('pwa-install-btn');
+    const tip = document.getElementById('pwa-ios-tip');
+    if(btn) btn.style.display = 'none';
+    if(tip) tip.style.display = 'block';
+    setTimeout(() => document.getElementById('pwa-banner').classList.add('show'), 2000);
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem(PWA_KEY, '1');
+  document.getElementById('pwa-banner').classList.remove('show');
+});
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
