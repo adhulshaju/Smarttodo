@@ -301,7 +301,7 @@ select.field-input option{background:#1a1a2e;}
 
 /* ── PWA INSTALL BANNER ── */
 .pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:3000;
-  background:linear-gradient(135deg,rgba(14,14,26,0.97),rgba(19,19,31,0.97));
+  background:linear-gradient(135deg,rgba(14,14,26,0.98),rgba(19,19,31,0.98));
   border-top:1px solid var(--border-bright);backdrop-filter:blur(20px);
   padding:18px 20px 28px;display:flex;align-items:center;gap:14px;
   transform:translateY(100%);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);
@@ -320,7 +320,41 @@ select.field-input option{background:#1a1a2e;}
 .pwa-dismiss-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
   padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;
   font-family:var(--font-sans);}
-.pwa-ios-tip{font-size:11px;color:var(--muted2);margin-top:6px;font-family:var(--font-mono);}
+
+/* ── iOS INSTALL GUIDE ── */
+.ios-guide-overlay{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(16px);display:none;align-items:flex-end;justify-content:center;padding:0;}
+.ios-guide-overlay.open{display:flex;}
+.ios-guide-sheet{background:var(--surface2);border:1px solid var(--border-bright);
+  border-radius:28px 28px 0 0;width:100%;max-width:500px;padding:12px 24px 44px;
+  animation:sheetUp .4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.ios-handle{width:44px;height:5px;background:var(--border-bright);border-radius:3px;margin:0 auto 22px;}
+.ios-guide-title{font-weight:900;font-size:22px;text-align:center;margin-bottom:6px;}
+.ios-guide-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;line-height:1.5;}
+.ios-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+.ios-step{display:flex;align-items:center;gap:14px;padding:14px 16px;
+  background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:16px;transition:border-color .3s;}
+.ios-step.highlight{border-color:var(--accent);background:rgba(124,92,252,0.08);}
+.ios-step-num{width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-weight:900;font-size:15px;flex-shrink:0;color:#fff;}
+.ios-step-body{flex:1;}
+.ios-step-label{font-weight:700;font-size:14px;}
+.ios-step-hint{font-size:12px;color:var(--muted);margin-top:2px;}
+.ios-step-icon{font-size:26px;flex-shrink:0;}
+.ios-arrow-indicator{text-align:center;font-size:13px;color:var(--accent);font-family:var(--font-mono);
+  letter-spacing:1px;margin-bottom:18px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.ios-guide-close{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted2);
+  width:100%;padding:14px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:var(--font-sans);transition:all .2s;}
+.ios-guide-close:hover{border-color:var(--border-bright);color:var(--text);}
+/* bottom arrow animation pointing at share button */
+.ios-bottom-arrow{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+  font-size:36px;display:none;animation:arrowBounce 1s ease-in-out infinite;z-index:4001;pointer-events:none;}
+@keyframes arrowBounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+.ios-guide-overlay.open .ios-bottom-arrow{display:block;}
 
 /* ── MISSED SECTION TOP ── */
 .missed-section-top{border-bottom:1px solid rgba(239,68,68,0.2);margin-bottom:0;}
@@ -475,17 +509,53 @@ select.field-input option{background:#1a1a2e;}
   <button class="vibrate-alert-dismiss" onclick="dismissVibrateAlert()">Dismiss</button>
 </div>
 
-<!-- PWA INSTALL BANNER -->
+<!-- PWA INSTALL BANNER (Android/Chrome — native one-tap install) -->
 <div class="pwa-banner" id="pwa-banner">
   <div class="pwa-banner-icon">✦</div>
   <div class="pwa-banner-body">
-    <div class="pwa-banner-title">Add Neural.Todo to Home Screen</div>
-    <div class="pwa-banner-sub">Install as an app — works offline, full screen, no browser bar.</div>
-    <div class="pwa-ios-tip" id="pwa-ios-tip" style="display:none;">📲 Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong></div>
+    <div class="pwa-banner-title">Install Neural.Todo</div>
+    <div class="pwa-banner-sub">Add to home screen — full screen, works offline.</div>
   </div>
   <div class="pwa-banner-actions">
     <button class="pwa-dismiss-btn" onclick="dismissPWA()">Later</button>
-    <button class="pwa-install-btn" id="pwa-install-btn" onclick="installPWA()">Install</button>
+    <button class="pwa-install-btn" id="pwa-install-btn" onclick="installPWA()">⬇ Install</button>
+  </div>
+</div>
+
+<!-- iOS INSTALL GUIDE MODAL -->
+<div class="ios-guide-overlay" id="ios-guide-overlay" onclick="if(event.target===this)closeIOSGuide()">
+  <div class="ios-guide-sheet">
+    <div class="ios-handle"></div>
+    <div class="ios-guide-title">📲 Add to Home Screen</div>
+    <div class="ios-guide-sub">iPhone/iPad requires a quick manual step.<br>Takes 5 seconds — only needed once.</div>
+    <div class="ios-steps">
+      <div class="ios-step" id="ios-s1">
+        <div class="ios-step-num">1</div>
+        <div class="ios-step-body">
+          <div class="ios-step-label">Tap the Share button</div>
+          <div class="ios-step-hint">The box with an arrow at the bottom of Safari</div>
+        </div>
+        <div class="ios-step-icon">⬆️</div>
+      </div>
+      <div class="ios-step" id="ios-s2">
+        <div class="ios-step-num">2</div>
+        <div class="ios-step-body">
+          <div class="ios-step-label">Scroll down → tap "Add to Home Screen"</div>
+          <div class="ios-step-hint">Has a plus icon — may need to scroll the share menu</div>
+        </div>
+        <div class="ios-step-icon">➕</div>
+      </div>
+      <div class="ios-step" id="ios-s3">
+        <div class="ios-step-num">3</div>
+        <div class="ios-step-body">
+          <div class="ios-step-label">Tap "Add" in the top right</div>
+          <div class="ios-step-hint">Neural.Todo icon will appear on your home screen</div>
+        </div>
+        <div class="ios-step-icon">✅</div>
+      </div>
+    </div>
+    <div class="ios-arrow-indicator">▼ Share button is at the bottom of your screen ▼</div>
+    <button class="ios-guide-close" onclick="closeIOSGuide()">Got it — I'll do it now</button>
   </div>
 </div>
 
@@ -728,6 +798,8 @@ function save() {
   localStorage.setItem('nt3_history', JSON.stringify(history));
   localStorage.setItem('nt3_settings', JSON.stringify(settings));
   render();
+  // Keep SW reminder schedule in sync so background notifications work
+  if(swReady) pushScheduleToSW();
 }
 
 function getCatIcon(cat) {
@@ -1715,39 +1787,154 @@ function toast(msg, type = 'info') {
   document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
 })();
 
-// ── SERVICE WORKER REGISTRATION ────────────────────────────────────────────
-// Inline SW as blob so it works from file:// and any server
+// ── SERVICE WORKER ─────────────────────────────────────────────────────────
+// The SW reads a schedule from localStorage on every fetch/activate.
+// When the phone wakes the SW (via periodic background sync or on next open),
+// it fires any overdue notifications immediately — even if the app was closed.
 const SW_CODE = `
+const SCHEDULE_KEY = 'nt3_sw_schedule';
+
+function getSchedule() {
+  try { return JSON.parse(self.__schedule || '[]'); } catch(e) { return []; }
+}
+
+// On install: claim immediately
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+
+// Receive schedule updates from main page
 self.addEventListener('message', e => {
-  if(e.data && e.data.type === 'SHOW_NOTIFICATION') {
+  if(!e.data) return;
+
+  if(e.data.type === 'UPDATE_SCHEDULE') {
+    self.__schedule = JSON.stringify(e.data.tasks || []);
+    checkScheduledNotifications();
+    return;
+  }
+
+  if(e.data.type === 'SHOW_NOTIFICATION') {
     const d = e.data;
     self.registration.showNotification(d.title, {
       body: d.body,
       icon: d.icon,
       tag: d.tag,
-      requireInteraction: d.requireInteraction || false,
-      vibrate: d.vibrate || [200,100,200],
-      data: { taskId: d.taskId }
+      requireInteraction: d.requireInteraction !== false,
+      vibrate: d.vibrate || [300,100,300,100,500],
+      data: { taskId: d.taskId, url: self.location.href }
     });
+    return;
   }
 });
+
+// Periodic background sync (Android Chrome only — fires even when closed)
+self.addEventListener('periodicsync', e => {
+  if(e.tag === 'nt3-reminder-check') {
+    e.waitUntil(checkScheduledNotifications());
+  }
+});
+
+// Background sync fallback
+self.addEventListener('sync', e => {
+  if(e.tag === 'nt3-reminder-check') {
+    e.waitUntil(checkScheduledNotifications());
+  }
+});
+
+// Also check on fetch (fires when phone opens browser/app)
+self.addEventListener('fetch', e => {
+  checkScheduledNotifications();
+});
+
+async function checkScheduledNotifications() {
+  const now = Date.now();
+  const tasks = getSchedule();
+  if(!tasks.length) return;
+
+  for(const t of tasks) {
+    if(t.reminded || !t.fireAt) continue;
+    if(now >= t.fireAt && now < t.fireAt + 3600000) {
+      await self.registration.showNotification('🔔 Neural.Todo Reminder', {
+        body: t.body || t.title,
+        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%237c5cfc'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white'%3E✦%3C/text%3E%3C/svg%3E",
+        tag: 'task-' + t.id,
+        requireInteraction: true,
+        vibrate: [400,150,400,150,600],
+        data: { taskId: t.id }
+      });
+      t.reminded = true;
+    }
+  }
+  // Notify main page to mark as reminded
+  const clients = await self.clients.matchAll({ type: 'window' });
+  for(const c of clients) c.postMessage({ type: 'MARK_REMINDED', tasks });
+  self.__schedule = JSON.stringify(tasks);
+}
+
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.matchAll({type:'window'}).then(list => {
-    if(list.length) return list[0].focus();
-    return clients.openWindow('./');
-  }));
+  e.waitUntil(
+    self.clients.matchAll({type:'window'}).then(list => {
+      const match = list.find(c => c.url.includes(e.notification.data?.url || ''));
+      if(match) return match.focus();
+      return self.clients.openWindow('./');
+    })
+  );
 });
 `;
+
 let swRegistration = null;
+let swReady = false;
+
 if('serviceWorker' in navigator) {
   const swBlob = new Blob([SW_CODE], {type:'application/javascript'});
   const swUrl = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl, {scope:'./'})
-    .then(r => { swRegistration = r; console.log('SW registered'); })
+  navigator.serviceWorker.register(swUrl, {scope: './'})
+    .then(r => {
+      swRegistration = r;
+      swReady = true;
+      // Listen for SW telling us tasks were reminded while closed
+      navigator.serviceWorker.addEventListener('message', e => {
+        if(e.data?.type === 'MARK_REMINDED' && e.data.tasks) {
+          e.data.tasks.forEach(swTask => {
+            const t = todos.find(x => x.id === swTask.id);
+            if(t && swTask.reminded) { t.reminded = true; }
+          });
+          save();
+        }
+      });
+      // Register periodic background sync (Android Chrome 80+)
+      if('periodicSync' in r) {
+        navigator.permissions.query({name:'periodic-background-sync'}).then(s => {
+          if(s.state === 'granted') {
+            r.periodicSync.register('nt3-reminder-check', {minInterval: 60000}).catch(()=>{});
+          }
+        }).catch(()=>{});
+      }
+      pushScheduleToSW();
+    })
     .catch(e => console.warn('SW failed:', e));
+}
+
+// Push full reminder schedule to SW so it can fire while app is closed
+function pushScheduleToSW() {
+  if(!swReady || !swRegistration?.active) return;
+  const now = Date.now();
+  const scheduled = todos
+    .filter(t => t.due_date && !t.reminded && !t.completed)
+    .map(t => {
+      const taskMs = new Date(t.due_date).getTime();
+      const offset = (t.reminderOffset || settings.offset || 15) * 60000;
+      return {
+        id: t.id,
+        title: t.title,
+        body: `${t.title}\n${new Date(t.due_date).toLocaleString('en-GB')}`,
+        fireAt: taskMs - offset,
+        reminded: false
+      };
+    })
+    .filter(t => t.fireAt > now - 3600000); // only future + last hour
+
+  swRegistration.active.postMessage({ type: 'UPDATE_SCHEDULE', tasks: scheduled });
 }
 
 // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
@@ -1758,16 +1945,16 @@ function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 }
 function isInStandaloneMode() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
 }
 
+// Android/Chrome: browser fires this when site qualifies for install
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
   if(!localStorage.getItem(PWA_KEY) && !isInStandaloneMode()) {
-    setTimeout(() => {
-      document.getElementById('pwa-banner').classList.add('show');
-    }, 2000);
+    setTimeout(() => document.getElementById('pwa-banner').classList.add('show'), 2500);
   }
 });
 
@@ -1778,7 +1965,7 @@ function installPWA() {
       if(r.outcome === 'accepted') {
         localStorage.setItem(PWA_KEY, '1');
         document.getElementById('pwa-banner').classList.remove('show');
-        toast('✦ App installed!', 'success');
+        toast('✦ App installed to home screen!', 'success');
       }
       deferredInstallPrompt = null;
     });
@@ -1790,20 +1977,47 @@ function dismissPWA() {
   document.getElementById('pwa-banner').classList.remove('show');
 }
 
-// Show iOS tip if needed
+function openIOSGuide() {
+  document.getElementById('ios-guide-overlay').classList.add('open');
+  // Animate steps sequentially
+  ['ios-s1','ios-s2','ios-s3'].forEach((id, i) => {
+    setTimeout(() => {
+      document.querySelectorAll('.ios-step').forEach(s => s.classList.remove('highlight'));
+      document.getElementById(id)?.classList.add('highlight');
+    }, i * 1800);
+  });
+}
+
+function closeIOSGuide() {
+  localStorage.setItem(PWA_KEY, '1');
+  document.getElementById('ios-guide-overlay').classList.remove('open');
+}
+
 window.addEventListener('load', () => {
-  if(isIOS() && !isInStandaloneMode() && !localStorage.getItem(PWA_KEY)) {
-    const btn = document.getElementById('pwa-install-btn');
-    const tip = document.getElementById('pwa-ios-tip');
-    if(btn) btn.style.display = 'none';
-    if(tip) tip.style.display = 'block';
-    setTimeout(() => document.getElementById('pwa-banner').classList.add('show'), 2000);
+  if(isInStandaloneMode()) return; // already installed, do nothing
+  if(localStorage.getItem(PWA_KEY)) return; // dismissed before
+
+  if(isIOS()) {
+    // iOS: show the guide sheet (can't auto-install)
+    document.getElementById('pwa-banner').innerHTML = `
+      <div class="pwa-banner-icon">✦</div>
+      <div class="pwa-banner-body">
+        <div class="pwa-banner-title">Install to Home Screen</div>
+        <div class="pwa-banner-sub">Full screen app — no browser bar.</div>
+      </div>
+      <div class="pwa-banner-actions">
+        <button class="pwa-dismiss-btn" onclick="dismissPWA()">Later</button>
+        <button class="pwa-install-btn" onclick="openIOSGuide()">📲 How to</button>
+      </div>`;
+    setTimeout(() => document.getElementById('pwa-banner').classList.add('show'), 2500);
   }
+  // Android is handled by beforeinstallprompt above
 });
 
 window.addEventListener('appinstalled', () => {
   localStorage.setItem(PWA_KEY, '1');
   document.getElementById('pwa-banner').classList.remove('show');
+  toast('✦ Neural.Todo installed!', 'success');
 });
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -1812,6 +2026,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if(Notification.permission === 'default') {
     document.getElementById('notif-dot').style.display = 'inline-block';
   }
+  // Push schedule to SW on every load so background notifications work
+  setTimeout(pushScheduleToSW, 1500);
 });
 
 // Close modals on overlay click
