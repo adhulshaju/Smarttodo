@@ -7,821 +7,237 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
+/* ... Keep all your CSS from before ... */
 :root {
-  --bg:       #0a0a0f;
-  --surface:  #13131a;
-  --card:     #1c1c27;
-  --border:   #2a2a3d;
-  --accent:   #7c6aff;
-  --accent2:  #ff6a9b;
-  --accent3:  #6affd4;
-  --text:     #f0f0f8;
-  --muted:    #7070a0;
-  --high:     #ff5a5a;
-  --med:      #ffb84d;
-  --low:      #4dffb8;
-  --r:        14px;
-  --r-sm:     8px;
-  --shadow:   0 8px 32px rgba(0,0,0,.45);
+  --bg: #0a0a0f; --surface: #13131a; --card: #1c1c27; --border: #2a2a3d;
+  --accent: #7c6aff; --accent2: #ff6a9b; --accent3: #6affd4; --text: #f0f0f8;
+  --muted: #7070a0; --high: #ff5a5a; --med: #ffb84d; --low: #4dffb8;
+  --r: 14px; --r-sm: 8px; --shadow: 0 8px 32px rgba(0,0,0,.45);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ── Background orbs ── */
-.bg-orb {
-  position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index:0;
-}
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; min-height: 100vh; overflow-x: hidden; }
+.bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index:0; }
 .bg-orb-1 { width:500px;height:500px;top:-100px;left:-150px;background:radial-gradient(circle,rgba(124,106,255,.18),transparent 70%); }
 .bg-orb-2 { width:400px;height:400px;bottom:-80px;right:-100px;background:radial-gradient(circle,rgba(255,106,155,.14),transparent 70%); }
-.bg-orb-3 { width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(106,255,212,.07),transparent 70%); }
-
-/* ── App shell ── */
-.app {
-  position: relative; z-index: 1;
-  max-width: 900px; margin: 0 auto;
-  padding: 0 16px 80px;
-}
-
-/* ── Header ── */
-header {
-  padding: 32px 0 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  animation: fadeDown .6s ease both;
-}
+.app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 16px 80px; }
+header { padding: 32px 0 24px; display: flex; align-items: center; justify-content: space-between; }
 .logo { display:flex; align-items:center; gap:12px; }
-.logo-icon {
-  width:40px; height:40px; border-radius:12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display:grid; place-items:center; font-size:20px;
-  box-shadow: 0 4px 16px rgba(124,106,255,.4);
-}
-.logo-text { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; letter-spacing:-.5px; }
+.logo-icon { width:40px; height:40px; border-radius:12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display:grid; place-items:center; font-size:20px; box-shadow: 0 4px 16px rgba(124,106,255,.4); }
+.logo-text { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
 .logo-text span { color: var(--accent); }
-
-/* ── Stats bar ── */
-.stats-bar {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
-  margin-bottom:24px;
-  animation: fadeUp .5s .1s ease both;
-}
-.stat-card {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--r); padding:14px 16px;
-  transition: transform .2s, border-color .2s;
-}
-.stat-card:hover { transform:translateY(-2px); border-color:var(--accent); }
-.stat-num { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; line-height:1; }
-.stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-top:4px; }
-.stat-card.total .stat-num   { color:var(--text); }
+.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; }
+.stat-num { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+.stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; margin-top:4px; }
 .stat-card.pending .stat-num { color:var(--accent); }
-.stat-card.done .stat-num    { color:var(--accent3); }
+.stat-card.done .stat-num { color:var(--accent3); }
 .stat-card.overdue .stat-num { color:var(--high); }
-
-/* ── Input area ── */
-.input-section {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--r); padding:20px;
-  margin-bottom:20px;
-  animation: fadeUp .5s .15s ease both;
-}
-.input-tabs {
-  display:flex; gap:8px; margin-bottom:16px;
-}
-.tab-btn {
-  background:var(--surface); border:1px solid var(--border);
-  color:var(--muted); border-radius:var(--r-sm);
-  padding:7px 16px; font-family:'DM Sans',sans-serif; font-size:13px;
-  cursor:pointer; transition:all .2s;
-}
-.tab-btn.active {
-  background:var(--accent); border-color:var(--accent);
-  color:#fff; font-weight:500;
-}
-
-/* NLP input */
+.input-section { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:20px; margin-bottom:20px; }
+.input-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.tab-btn { background:var(--surface); border:1px solid var(--border); color:var(--muted); border-radius:var(--r-sm); padding:7px 16px; font-size:13px; cursor:pointer; }
+.tab-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 .nlp-wrap { display:flex; gap:10px; align-items:flex-end; }
-.nlp-input {
-  flex:1; background:var(--surface); border:1.5px solid var(--border);
-  color:var(--text); border-radius:var(--r-sm);
-  padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px;
-  resize:vertical; min-height:80px; outline:none;
-  transition:border-color .2s;
-  line-height:1.5;
-}
-.nlp-input::placeholder { color:var(--muted); }
-.nlp-input:focus { border-color:var(--accent); }
-.nlp-input:focus + .nlp-glow { opacity:1; }
-
-.add-btn {
-  background:linear-gradient(135deg, var(--accent), var(--accent2));
-  border:none; color:#fff; border-radius:var(--r-sm);
-  padding:14px 24px; font-family:'Syne',sans-serif; font-size:14px;
-  font-weight:700; cursor:pointer;
-  transition:transform .15s, box-shadow .15s;
-  white-space:nowrap;
-  box-shadow:0 4px 16px rgba(124,106,255,.35);
-}
-.add-btn:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(124,106,255,.45); }
-.add-btn:active { transform:translateY(0); }
-.add-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-
-.hint-text {
-  font-size:12px; color:var(--muted); margin-top:10px; line-height:1.6;
-}
-.hint-text strong { color:var(--accent3); font-weight:500; }
-
-/* Manual form */
+.nlp-input { flex:1; background:var(--surface); border:1.5px solid var(--border); color:var(--text); border-radius:var(--r-sm); padding:14px 16px; font-size:15px; outline:none; min-height:80px; }
+.add-btn { background:linear-gradient(135deg, var(--accent), var(--accent2)); border:none; color:#fff; border-radius:var(--r-sm); padding:14px 24px; font-family:'Syne',sans-serif; font-weight:700; cursor:pointer; }
 .manual-form { display:none; }
 .manual-form.active { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-field { display:flex; flex-direction:column; gap:6px; }
 .form-field.full { grid-column:1/-1; }
-.form-field label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; }
-.form-field input, .form-field select, .form-field textarea {
-  background:var(--surface); border:1.5px solid var(--border);
-  color:var(--text); border-radius:var(--r-sm);
-  padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:14px;
-  outline:none; transition:border-color .2s;
-}
-.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
-  border-color:var(--accent);
-}
-.form-field select option { background:var(--card); }
-.form-field textarea { resize:vertical; min-height:60px; }
-
-/* ── Filter bar ── */
-.filter-bar {
-  display:flex; gap:8px; align-items:center;
-  margin-bottom:16px; flex-wrap:wrap;
-  animation: fadeUp .5s .2s ease both;
-}
-.filter-btn {
-  background:var(--card); border:1px solid var(--border);
-  color:var(--muted); border-radius:20px;
-  padding:6px 14px; font-size:13px; cursor:pointer;
-  transition:all .2s;
-}
-.filter-btn.active, .filter-btn:hover {
-  background:var(--accent); border-color:var(--accent); color:#fff;
-}
-.sort-select {
-  margin-left:auto;
-  background:var(--card); border:1px solid var(--border);
-  color:var(--text); border-radius:var(--r-sm);
-  padding:6px 12px; font-family:'DM Sans',sans-serif; font-size:13px;
-  outline:none; cursor:pointer;
-}
-
-/* ── View toggle ── */
-.view-toggle { display:flex; gap:6px; }
-.view-btn {
-  background:var(--card); border:1px solid var(--border);
-  color:var(--muted); border-radius:var(--r-sm);
-  width:34px; height:34px; display:grid; place-items:center;
-  cursor:pointer; transition:all .2s; font-size:16px;
-}
-.view-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-
-/* ── Todo list ── */
-#todos-container { animation: fadeUp .5s .25s ease both; }
-
-.section-label {
-  font-size:11px; text-transform:uppercase; letter-spacing:1px;
-  color:var(--muted); padding:8px 0 6px; border-bottom:1px solid var(--border);
-  margin-bottom:10px; margin-top:18px;
-}
-
-/* Card view */
-.todos-grid { display:grid; grid-template-columns:1fr; gap:10px; }
-.todos-grid.two-col { grid-template-columns:repeat(2,1fr); }
-
-.todo-card {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--r); padding:16px;
-  display:flex; gap:14px; align-items:flex-start;
-  transition:transform .2s, border-color .2s, box-shadow .2s;
-  animation: cardIn .3s ease both;
-  cursor:default;
-}
-.todo-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--border); }
-.todo-card.completed { opacity:.5; }
-.todo-card.completed .todo-title { text-decoration:line-through; }
-
-@keyframes cardIn {
-  from { opacity:0; transform:translateY(12px) scale(.98); }
-  to   { opacity:1; transform:none; }
-}
-
-.todo-check {
-  width:22px; height:22px; border-radius:50%;
-  border:2px solid var(--border); cursor:pointer;
-  display:grid; place-items:center; flex-shrink:0;
-  transition:all .2s; margin-top:2px;
-}
-.todo-check:hover { border-color:var(--accent3); }
-.todo-check.done {
-  background:var(--accent3); border-color:var(--accent3);
-}
-.todo-check.done::after { content:'✓'; font-size:12px; color:#000; font-weight:700; }
-
-.todo-body { flex:1; min-width:0; }
-.todo-title { font-weight:500; line-height:1.4; margin-bottom:6px; word-break:break-word; }
-.todo-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-
-.badge {
-  font-size:11px; padding:3px 9px; border-radius:20px;
-  font-weight:500; letter-spacing:.3px;
-}
-.badge-priority-high   { background:rgba(255,90,90,.15); color:var(--high); }
-.badge-priority-medium { background:rgba(255,184,77,.12); color:var(--med); }
-.badge-priority-low    { background:rgba(77,255,184,.1);  color:var(--low); }
-.badge-category { background:rgba(124,106,255,.12); color:var(--accent); }
-.badge-date     { background:rgba(255,255,255,.05); color:var(--muted); font-size:11px; }
-.badge-location { background:rgba(255,106,155,.1); color:var(--accent2); }
-.badge-source-nlp    { background:rgba(106,255,212,.08); color:var(--accent3); }
-.badge-source-manual { background:rgba(255,255,255,.05); color:var(--muted); }
-
-.todo-actions {
-  display:flex; gap:6px; opacity:0; transition:opacity .2s; flex-shrink:0;
-}
-.todo-card:hover .todo-actions { opacity:1; }
-.icon-btn {
-  background:var(--surface); border:1px solid var(--border);
-  color:var(--muted); border-radius:var(--r-sm);
-  width:28px; height:28px; display:grid; place-items:center;
-  cursor:pointer; font-size:13px; transition:all .2s;
-}
-.icon-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
-.icon-btn.delete:hover { background:var(--high); border-color:var(--high); }
-
-/* Empty state */
-.empty-state {
-  text-align:center; padding:60px 20px; color:var(--muted);
-}
-.empty-state .empty-icon { font-size:48px; margin-bottom:16px; display:block; }
-.empty-state h3 { font-family:'Syne',sans-serif; font-size:20px; color:var(--text); margin-bottom:8px; }
-
-/* ── Toast ── */
-.toast-wrap { position:fixed; bottom:24px; right:24px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
-.toast {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--r-sm); padding:12px 18px;
-  font-size:14px; display:flex; align-items:center; gap:10px;
-  animation: toastIn .3s ease; box-shadow:var(--shadow);
-  max-width:320px;
-}
-.toast.success { border-color:var(--accent3); }
-.toast.error   { border-color:var(--high); }
-.toast .ti { font-size:18px; }
-@keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; } }
-
-/* ── Loading spinner ── */
-.spinner {
-  width:18px; height:18px; border:2px solid var(--border);
-  border-top-color:var(--accent); border-radius:50%;
-  animation:spin .6s linear infinite; display:inline-block;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* ── Modal (edit) ── */
-.overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.7);
-  backdrop-filter:blur(4px); z-index:500;
-  display:grid; place-items:center; padding:20px;
-  opacity:0; pointer-events:none; transition:opacity .25s;
-}
-.overlay.open { opacity:1; pointer-events:all; }
-.modal {
-  background:var(--card); border:1px solid var(--border);
-  border-radius:var(--r); padding:24px; width:100%;
-  max-width:500px; transform:scale(.95);
-  transition:transform .25s;
-}
-.overlay.open .modal { transform:none; }
-.modal h3 { font-family:'Syne',sans-serif; font-size:18px; margin-bottom:20px; }
-.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
-.btn-primary {
-  background:linear-gradient(135deg, var(--accent), var(--accent2));
-  border:none; color:#fff; border-radius:var(--r-sm);
-  padding:10px 20px; font-family:'Syne',sans-serif; font-weight:700;
-  font-size:13px; cursor:pointer; transition:opacity .2s;
-}
-.btn-primary:hover { opacity:.85; }
-.btn-ghost {
-  background:transparent; border:1px solid var(--border);
-  color:var(--muted); border-radius:var(--r-sm);
-  padding:10px 20px; font-family:'DM Sans',sans-serif;
-  font-size:13px; cursor:pointer; transition:border-color .2s;
-}
-.btn-ghost:hover { border-color:var(--accent); color:var(--text); }
-
-/* ── Animations ── */
-@keyframes fadeDown {
-  from { opacity:0; transform:translateY(-16px); }
-  to   { opacity:1; transform:none; }
-}
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(16px); }
-  to   { opacity:1; transform:none; }
-}
-
-/* ── Detected preview bubble ── */
-.detect-preview {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r-sm); padding:12px 14px;
-  margin-top:12px; font-size:13px; display:none;
-}
-.detect-preview.show { display:block; }
-.detect-preview .dp-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-.detect-preview .dp-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
-.detect-count { font-weight:600; color:var(--accent3); }
-
-/* ── Mobile ── */
-@media(max-width:600px) {
-  header { padding:20px 0 16px; }
-  .stats-bar { grid-template-columns:repeat(2,1fr); }
-  .todos-grid.two-col { grid-template-columns:1fr; }
-  .nlp-wrap { flex-direction:column; }
-  .add-btn { width:100%; }
-  .manual-form.active { grid-template-columns:1fr; }
-  .stat-num { font-size:22px; }
-  .filter-bar { gap:6px; }
-  .sort-select { margin-left:0; width:100%; }
-}
-@media(min-width:700px) {
-  .todos-grid.two-col { grid-template-columns:repeat(2,1fr); }
-}
+.form-field input, .form-field select, .form-field textarea { background:var(--surface); border:1.5px solid var(--border); color:var(--text); border-radius:var(--r-sm); padding:10px 14px; outline:none; }
+.filter-bar { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+.filter-btn { background:var(--card); border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer; }
+.filter-btn.active { background:var(--accent); color:#fff; }
+.sort-select { margin-left:auto; background:var(--card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:var(--r-sm); }
+.todo-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px; display:flex; gap:14px; margin-bottom:10px; transition:0.2s; }
+.todo-card.completed { opacity:0.5; }
+.todo-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--border); cursor:pointer; display:grid; place-items:center; }
+.todo-check.done { background:var(--accent3); border-color:var(--accent3); }
+.todo-check.done::after { content:'✓'; color:#000; font-size:12px; font-weight:bold; }
+.todo-body { flex:1; }
+.todo-title { font-weight:500; margin-bottom:4px; }
+.badge { font-size:11px; padding:2px 8px; border-radius:10px; margin-right:4px; font-weight:500; }
+.badge-priority-high { background:rgba(255,90,90,0.15); color:var(--high); }
+.badge-category { background:rgba(124,106,255,0.1); color:var(--accent); }
+.todo-actions { display:flex; gap:6px; }
+.icon-btn { background:var(--surface); border:1px solid var(--border); color:var(--muted); width:28px; height:28px; display:grid; place-items:center; border-radius:4px; cursor:pointer; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; place-items:center; z-index:100; }
+.overlay.open { display:grid; }
+.modal { background:var(--card); padding:24px; border-radius:var(--r); width:90%; max-width:500px; }
+.toast-wrap { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; }
+.toast { background:var(--card); border:1px solid var(--accent3); padding:12px 20px; border-radius:8px; animation: slideIn 0.3s; }
+@keyframes slideIn { from { transform:translateX(100%); } to { transform:translateX(0); } }
 </style>
 </head>
 <body>
 
-<!-- BG orbs -->
 <div class="bg-orb bg-orb-1"></div>
 <div class="bg-orb bg-orb-2"></div>
-<div class="bg-orb bg-orb-3"></div>
 
 <div class="app">
-
-  <!-- Header -->
   <header>
-    <div class="logo">
-      <div class="logo-icon">✦</div>
-      <div class="logo-text">Smart<span>Todo</span></div>
-    </div>
+    <div class="logo"><div class="logo-icon">✦</div><div class="logo-text">Smart<span>Todo</span></div></div>
     <div class="view-toggle">
-      <button class="view-btn active" id="list-view-btn" title="List view" onclick="setView('list')">☰</button>
-      <button class="view-btn" id="grid-view-btn" title="Grid view" onclick="setView('grid')">⊞</button>
+        <button class="view-btn active" onclick="setView('list')">☰</button>
+        <button class="view-btn" onclick="setView('grid')">⊞</button>
     </div>
   </header>
 
-  <!-- Stats -->
-  <div class="stats-bar" id="stats-bar">
-    <div class="stat-card total"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total</div></div>
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total</div></div>
     <div class="stat-card pending"><div class="stat-num" id="s-pending">0</div><div class="stat-label">Pending</div></div>
     <div class="stat-card done"><div class="stat-num" id="s-done">0</div><div class="stat-label">Done</div></div>
     <div class="stat-card overdue"><div class="stat-num" id="s-overdue">0</div><div class="stat-label">Overdue</div></div>
   </div>
 
-  <!-- Input -->
   <div class="input-section">
     <div class="input-tabs">
       <button class="tab-btn active" onclick="switchTab('nlp')">✦ Smart Input</button>
       <button class="tab-btn" onclick="switchTab('manual')">＋ Manual</button>
     </div>
-
-    <!-- NLP -->
     <div id="nlp-panel">
       <div class="nlp-wrap">
-        <textarea class="nlp-input" id="nlp-input"
-          placeholder="Type anything… e.g. 'Meet John at Starbucks tomorrow 3pm and submit the report by Friday. Also buy groceries on Saturday morning.'"></textarea>
+        <textarea class="nlp-input" id="nlp-input" placeholder="e.g. Meet John tomorrow at 3pm..."></textarea>
         <button class="add-btn" id="nlp-btn" onclick="submitNLP()">✦ Add Tasks</button>
       </div>
-      <div class="detect-preview" id="detect-preview"></div>
-      <p class="hint-text">
-        <strong>Smart:</strong> Detects dates, times, locations, priorities &amp; multiple tasks from one sentence.
-      </p>
     </div>
-
-    <!-- Manual -->
     <div class="manual-form" id="manual-panel">
-      <div class="form-field full">
-        <label>Task Title *</label>
-        <input type="text" id="m-title" placeholder="What do you need to do?">
-      </div>
+      <div class="form-field full"><input type="text" id="m-title" placeholder="Task Title"></div>
+      <div class="form-field"><input type="datetime-local" id="m-due"></div>
       <div class="form-field">
-        <label>Due Date &amp; Time</label>
-        <input type="datetime-local" id="m-due">
+        <select id="m-priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
       </div>
-      <div class="form-field">
-        <label>Priority</label>
-        <select id="m-priority">
-          <option value="high">🔴 High</option>
-          <option value="medium" selected>🟡 Medium</option>
-          <option value="low">🟢 Low</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Category</label>
-        <select id="m-category">
-          <option value="general">General</option>
-          <option value="meeting">Meeting</option>
-          <option value="shopping">Shopping</option>
-          <option value="health">Health</option>
-          <option value="work">Work</option>
-          <option value="travel">Travel</option>
-          <option value="personal">Personal</option>
-          <option value="finance">Finance</option>
-          <option value="learning">Learning</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Location</label>
-        <input type="text" id="m-location" placeholder="Where?">
-      </div>
-      <div class="form-field">
-        <label>Topic</label>
-        <input type="text" id="m-topic" placeholder="Tag this task">
-      </div>
-      <div class="form-field full">
-        <label>Notes</label>
-        <textarea id="m-desc" placeholder="Additional details…"></textarea>
-      </div>
-      <div class="form-field full" style="display:flex;justify-content:flex-end;">
-        <button class="btn-primary" onclick="submitManual()">＋ Add Task</button>
-      </div>
+      <button class="add-btn" style="grid-column: 1/-1" onclick="submitManual()">＋ Add Task</button>
     </div>
   </div>
 
-  <!-- Filters -->
   <div class="filter-bar">
-    <button class="filter-btn active" onclick="setFilter('show','all',this)">All</button>
-    <button class="filter-btn" onclick="setFilter('show','active',this)">Active</button>
-    <button class="filter-btn" onclick="setFilter('show','completed',this)">Done</button>
-    <div id="cat-filters"></div>
-    <select class="sort-select" id="sort-select" onchange="setSort(this.value)">
-      <option value="upcoming">📅 Upcoming</option>
-      <option value="created">🕐 Recently Added</option>
-      <option value="priority">🔥 Priority</option>
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
+    <button class="filter-btn" onclick="setFilter('completed', this)">Done</button>
+    <select class="sort-select" onchange="setSort(this.value)">
+        <option value="upcoming">Upcoming</option>
+        <option value="priority">Priority</option>
     </select>
   </div>
 
-  <!-- Todo list -->
-  <div id="todos-container">
-    <div class="todos-grid" id="todos-grid"></div>
-  </div>
-
+  <div id="todos-grid"></div>
 </div>
 
-<!-- Toast container -->
 <div class="toast-wrap" id="toasts"></div>
 
-<!-- Edit Modal -->
-<div class="overlay" id="edit-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <h3>Edit Task</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="form-field" style="grid-column:1/-1">
-        <label>Title</label>
-        <input type="text" id="e-title">
-      </div>
-      <div class="form-field">
-        <label>Due Date</label>
-        <input type="datetime-local" id="e-due">
-      </div>
-      <div class="form-field">
-        <label>Priority</label>
-        <select id="e-priority">
-          <option value="high">🔴 High</option>
-          <option value="medium">🟡 Medium</option>
-          <option value="low">🟢 Low</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Category</label>
-        <select id="e-category">
-          <option value="general">General</option>
-          <option value="meeting">Meeting</option>
-          <option value="shopping">Shopping</option>
-          <option value="health">Health</option>
-          <option value="work">Work</option>
-          <option value="travel">Travel</option>
-          <option value="personal">Personal</option>
-          <option value="finance">Finance</option>
-          <option value="learning">Learning</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Location</label>
-        <input type="text" id="e-location">
-      </div>
-      <div class="form-field" style="grid-column:1/-1">
-        <label>Notes</label>
-        <textarea id="e-desc" style="min-height:60px"></textarea>
-      </div>
+<div class="overlay" id="edit-overlay">
+    <div class="modal">
+        <h3>Edit Task</h3>
+        <input type="text" id="e-title" style="width:100%; margin-bottom:10px; padding:10px;">
+        <button class="add-btn" onclick="saveEdit()">Save</button>
+        <button class="tab-btn" onclick="document.getElementById('edit-overlay').classList.remove('open')">Cancel</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="document.getElementById('edit-overlay').classList.remove('open')">Cancel</button>
-      <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
-let todos = [];
-let currentFilters = { show: 'all', category: '', sort: 'upcoming' };
-let viewMode = 'list';
+let todos = JSON.parse(localStorage.getItem('smart_todos') || '[]');
+let filter = 'all';
+let sort = 'upcoming';
+let view = 'list';
 let editingId = null;
 
-// ── Init ───────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadTodos();
-  loadStats();
-  loadCategories();
-  // Live detect preview as user types
-  document.getElementById('nlp-input').addEventListener('input', debounce(liveDetect, 400));
-});
-
-// ── API helpers ────────────────────────────────────────────────────────────
-async function api(url, opts={}) {
-  const r = await fetch(url, {
-    headers: {'Content-Type':'application/json'},
-    ...opts,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+function save() { 
+    localStorage.setItem('smart_todos', JSON.stringify(todos)); 
+    render(); 
 }
 
-// ── Load ───────────────────────────────────────────────────────────────────
-async function loadTodos() {
-  const params = new URLSearchParams({
-    sort: currentFilters.sort,
-    show: currentFilters.show,
-    category: currentFilters.category,
-  });
-  todos = await api('/api/todos?' + params);
-  renderTodos();
-}
-
-async function loadStats() {
-  const s = await api('/api/stats');
-  document.getElementById('s-total').textContent   = s.total;
-  document.getElementById('s-pending').textContent = s.pending;
-  document.getElementById('s-done').textContent    = s.completed;
-  document.getElementById('s-overdue').textContent = s.overdue;
-}
-
-async function loadCategories() {
-  const cats = await api('/api/categories');
-  const wrap = document.getElementById('cat-filters');
-  wrap.innerHTML = cats.map(c =>
-    `<button class="filter-btn" onclick="setCatFilter('${c.name}',this)">${catIcon(c.name)} ${c.name} <span style="opacity:.5">${c.count}</span></button>`
-  ).join('');
-}
-
-function catIcon(c) {
-  const icons = {meeting:'📅',shopping:'🛒',health:'💊',work:'💼',travel:'✈️',personal:'👤',finance:'💰',learning:'📚',general:'📌'};
-  return icons[c] || '📌';
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
-function renderTodos() {
-  const grid = document.getElementById('todos-grid');
-  if (!todos.length) {
-    grid.innerHTML = `<div class="empty-state"><span class="empty-icon">✦</span>
-      <h3>No tasks yet</h3><p>Type a sentence above to add your first smart task!</p></div>`;
-    return;
-  }
-
-  if (viewMode === 'grid') grid.classList.add('two-col');
-  else grid.classList.remove('two-col');
-
-  // Group by section
-  const now = new Date();
-  const groups = { Overdue:[], Today:[], Tomorrow:[], 'This Week':[], Later:[], 'No Date':[] };
-  todos.forEach(t => {
-    if (!t.due_date) { groups['No Date'].push(t); return; }
-    const d = new Date(t.due_date);
-    const daysAway = Math.floor((d - now) / 86400000);
-    if (d < now && !t.completed) groups['Overdue'].push(t);
-    else if (daysAway < 1)  groups['Today'].push(t);
-    else if (daysAway < 2)  groups['Tomorrow'].push(t);
-    else if (daysAway < 7)  groups['This Week'].push(t);
-    else                    groups['Later'].push(t);
-  });
-
-  let html = '';
-  for (const [label, items] of Object.entries(groups)) {
-    if (!items.length) continue;
-    html += `<div class="section-label">${label} · ${items.length}</div>`;
-    html += `<div class="todos-grid ${viewMode==='grid'?'two-col':''}">`;
-    html += items.map(todoCard).join('');
-    html += '</div>';
-  }
-  grid.innerHTML = html;
-}
-
-function todoCard(t) {
-  const done = t.completed;
-  const pCls = `badge badge-priority-${t.priority}`;
-  const pLabel = t.priority === 'high' ? '🔴 High' : t.priority === 'medium' ? '🟡 Medium' : '🟢 Low';
-  const dateStr = t.due_date ? fmtDate(t.due_date) : '';
-  const src = t.source === 'nlp' ? '<span class="badge badge-source-nlp">✦ AI</span>' : '<span class="badge badge-source-manual">Manual</span>';
-
-  return `
-  <div class="todo-card ${done?'completed':''}" id="tc-${t.id}">
-    <div class="todo-check ${done?'done':''}" onclick="toggleTodo(${t.id})"></div>
-    <div class="todo-body">
-      <div class="todo-title">${escHtml(t.title)}</div>
-      <div class="todo-meta">
-        <span class="${pCls}">${pLabel}</span>
-        ${t.category !== 'general' ? `<span class="badge badge-category">${catIcon(t.category)} ${t.category}</span>` : ''}
-        ${dateStr ? `<span class="badge badge-date">📅 ${dateStr}</span>` : ''}
-        ${t.location ? `<span class="badge badge-location">📍 ${escHtml(t.location)}</span>` : ''}
-        ${src}
-      </div>
-    </div>
-    <div class="todo-actions">
-      <div class="icon-btn" onclick="openEdit(${t.id})" title="Edit">✎</div>
-      <div class="icon-btn delete" onclick="deleteTodo(${t.id})" title="Delete">✕</div>
-    </div>
-  </div>`;
-}
-
-// ── Submit NLP ─────────────────────────────────────────────────────────────
 async function submitNLP() {
-  const text = document.getElementById('nlp-input').value.trim();
-  if (!text) return;
-  const btn = document.getElementById('nlp-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const res = await api('/api/todos', { method:'POST', body: { text, source:'nlp' } });
+    const text = document.getElementById('nlp-input').value;
+    const res = await fetch('/api/todos', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    todos = [...todos, ...data.todos];
     document.getElementById('nlp-input').value = '';
-    document.getElementById('detect-preview').classList.remove('show');
-    await loadTodos(); await loadStats(); await loadCategories();
-    toast(`✦ Added ${res.count} task${res.count>1?'s':''}!`, 'success');
-  } catch(e) {
-    toast('Error adding tasks', 'error');
-  } finally {
-    btn.disabled = false; btn.innerHTML = '✦ Add Tasks';
-  }
+    save();
 }
 
-// ── Submit Manual ──────────────────────────────────────────────────────────
-async function submitManual() {
-  const title = document.getElementById('m-title').value.trim();
-  if (!title) { toast('Please enter a title', 'error'); return; }
-  const body = {
-    text: title, source: 'manual',
-    title, priority: document.getElementById('m-priority').value,
-    category: document.getElementById('m-category').value,
-    location: document.getElementById('m-location').value,
-    topic: document.getElementById('m-topic').value,
-    description: document.getElementById('m-desc').value,
-    due_date: document.getElementById('m-due').value,
-  };
-  try {
-    await api('/api/todos', { method:'POST', body });
-    ['m-title','m-location','m-topic','m-desc','m-due'].forEach(id => document.getElementById(id).value='');
-    await loadTodos(); await loadStats(); await loadCategories();
-    toast('Task added!', 'success');
-  } catch(e) { toast('Error', 'error'); }
+function submitManual() {
+    const title = document.getElementById('m-title').value;
+    if(!title) return;
+    const newTask = {
+        id: Date.now(),
+        title: title,
+        priority: document.getElementById('m-priority').value,
+        due_date: document.getElementById('m-due').value,
+        completed: false,
+        category: 'general'
+    };
+    todos.push(newTask);
+    save();
 }
 
-// ── Toggle complete ────────────────────────────────────────────────────────
-async function toggleTodo(id) {
-  const t = todos.find(x=>x.id===id);
-  if (!t) return;
-  await api(`/api/todos/${id}`, { method:'PUT', body:{ completed: !t.completed } });
-  await loadTodos(); await loadStats();
+function toggleTodo(id) {
+    todos = todos.map(t => t.id === id ? {...t, completed: !t.completed} : t);
+    save();
 }
 
-// ── Delete ─────────────────────────────────────────────────────────────────
-async function deleteTodo(id) {
-  await api(`/api/todos/${id}`, { method:'DELETE' });
-  await loadTodos(); await loadStats(); await loadCategories();
-  toast('Deleted', 'success');
+function deleteTodo(id) {
+    todos = todos.filter(t => t.id !== id);
+    save();
 }
 
-// ── Edit modal ─────────────────────────────────────────────────────────────
-function openEdit(id) {
-  const t = todos.find(x=>x.id===id);
-  if (!t) return;
-  editingId = id;
-  document.getElementById('e-title').value    = t.title;
-  document.getElementById('e-priority').value = t.priority;
-  document.getElementById('e-category').value = t.category;
-  document.getElementById('e-location').value = t.location || '';
-  document.getElementById('e-desc').value     = t.description || '';
-  if (t.due_date) {
-    const dt = new Date(t.due_date);
-    document.getElementById('e-due').value = dt.toISOString().slice(0,16);
-  } else document.getElementById('e-due').value = '';
-  document.getElementById('edit-overlay').classList.add('open');
+function render() {
+    const grid = document.getElementById('todos-grid');
+    let filtered = todos.filter(t => {
+        if(filter === 'active') return !t.completed;
+        if(filter === 'completed') return t.completed;
+        return true;
+    });
+
+    // Simple Sort
+    if(sort === 'priority') {
+        const pMap = {high: 0, medium: 1, low: 2};
+        filtered.sort((a,b) => pMap[a.priority] - pMap[b.priority]);
+    } else {
+        filtered.sort((a,b) => new Date(a.due_date || 0) - new Date(b.due_date || 0));
+    }
+
+    grid.innerHTML = filtered.map(t => `
+        <div class="todo-card ${t.completed ? 'completed' : ''}">
+            <div class="todo-check ${t.completed ? 'done' : ''}" onclick="toggleTodo(${t.id})"></div>
+            <div class="todo-body">
+                <div class="todo-title">${t.title}</div>
+                <span class="badge badge-priority-${t.priority}">${t.priority}</span>
+                <span class="badge">${t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No date'}</span>
+            </div>
+            <div class="todo-actions">
+                <div class="icon-btn" onclick="deleteTodo(${t.id})">✕</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Update Stats
+    document.getElementById('s-total').innerText = todos.length;
+    document.getElementById('s-pending').innerText = todos.filter(t => !t.completed).length;
+    document.getElementById('s-done').innerText = todos.filter(t => t.completed).length;
+    document.getElementById('s-overdue').innerText = todos.filter(t => t.due_date && new Date(t.due_date) < new Date() && !t.completed).length;
 }
 
-async function saveEdit() {
-  if (!editingId) return;
-  const body = {
-    title:    document.getElementById('e-title').value,
-    priority: document.getElementById('e-priority').value,
-    category: document.getElementById('e-category').value,
-    location: document.getElementById('e-location').value,
-    description: document.getElementById('e-desc').value,
-    due_date: document.getElementById('e-due').value || null,
-  };
-  await api(`/api/todos/${editingId}`, { method:'PUT', body });
-  document.getElementById('edit-overlay').classList.remove('open');
-  await loadTodos(); await loadStats();
-  toast('Saved!', 'success');
-}
-
-function closeModal(e) {
-  if (e.target.id === 'edit-overlay') document.getElementById('edit-overlay').classList.remove('open');
-}
-
-// ── Filters & Sort ─────────────────────────────────────────────────────────
-function setFilter(key, val, el) {
-  currentFilters[key] = val;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  loadTodos();
-}
-function setCatFilter(cat, el) {
-  if (currentFilters.category === cat) {
-    currentFilters.category = '';
-    el.classList.remove('active');
-  } else {
-    currentFilters.category = cat;
+function setFilter(f, el) {
+    filter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
-  }
-  loadTodos();
-}
-function setSort(val) { currentFilters.sort = val; loadTodos(); }
-function setView(v) {
-  viewMode = v;
-  document.getElementById('list-view-btn').classList.toggle('active', v==='list');
-  document.getElementById('grid-view-btn').classList.toggle('active', v==='grid');
-  renderTodos();
+    render();
 }
 
-// ── Tab switch ─────────────────────────────────────────────────────────────
+function setSort(s) { sort = s; render(); }
+
 function switchTab(t) {
-  document.getElementById('nlp-panel').style.display    = t==='nlp'    ? '' : 'none';
-  document.getElementById('manual-panel').className     = 'manual-form' + (t==='manual' ? ' active' : '');
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&t==='nlp')||(i===1&&t==='manual')));
+    document.getElementById('nlp-panel').style.display = t === 'nlp' ? 'block' : 'none';
+    document.getElementById('manual-panel').style.display = t === 'manual' ? 'grid' : 'none';
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
 }
 
-// ── Live detect preview ────────────────────────────────────────────────────
-function liveDetect() {
-  const text = document.getElementById('nlp-input').value.trim();
-  const prev = document.getElementById('detect-preview');
-  if (!text) { prev.classList.remove('show'); return; }
-  // simple client-side count estimate
-  const sentences = text.split(/[.!?;]|(?:\s+and\s+(?:i\s+)?(?:need|must|have|will|should|plan|want|also))/i)
-    .filter(s => s.trim().length > 5);
-  const count = Math.max(1, sentences.length);
-  prev.innerHTML = `<div class="dp-title">✦ Smart Detect Preview</div>
-    <div>Detected approx. <span class="detect-count">${count} task${count>1?'s':''}</span> in your text</div>`;
-  prev.classList.add('show');
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-function toast(msg, type='success') {
-  const wrap = document.getElementById('toasts');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<span class="ti">${type==='success'?'✦':'⚠'}</span>${msg}`;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-// ── Utilities ──────────────────────────────────────────────────────────────
-function fmtDate(iso) {
-  const d = new Date(iso);
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) return 'Today ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString([], {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-}
-function escHtml(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
-
-// Enter to submit NLP
-document.addEventListener('keydown', e => {
-  if (e.key==='Enter' && e.ctrlKey) submitNLP();
-  if (e.key==='Escape') document.getElementById('edit-overlay').classList.remove('open');
-});
+document.addEventListener('DOMContentLoaded', render);
 </script>
 </body>
 </html>
