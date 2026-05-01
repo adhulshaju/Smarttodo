@@ -3,202 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartTodo Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>SmartTodo Ultra Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050508; --surface: #0f0f15; --card: #161621; --border: #252535;
-            --accent: #7c6aff; --accent-glow: rgba(124,106,255,0.4);
-            --text: #f0f0f8; --muted: #71718a;
-            --high: #ff4d4d; --med: #ffb84d; --low: #4dffb8;
+            --bg: #020204; --card: rgba(15, 15, 25, 0.7); --border: rgba(255,255,255,0.08);
+            --accent: #8b5cf6; --accent-glow: rgba(139, 92, 246, 0.3);
+            --text: #ffffff; --muted: #64748b;
         }
-        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
-        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        .bg-orb { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(100px); z-index: 0; opacity: 0.15; pointer-events: none; }
-        .orb-1 { top: -200px; left: -200px; background: var(--accent); }
-        .orb-2 { bottom: -200px; right: -200px; background: #ff6a9b; }
+        .mesh { position: fixed; inset: 0; z-index: -1; background: 
+            radial-gradient(circle at 0% 0%, #1e1b4b 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, #312e81 0%, transparent 50%); }
 
-        .container { max-width: 850px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .logo { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
-        .logo span { color: var(--accent); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
+        .logo { font-family: 'Syne'; font-size: 32px; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Stats Grid */
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; transition: 0.3s; }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .stat-card h3 { font-family: 'Syne'; font-size: 32px; margin-bottom: 4px; }
-        .stat-card p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .app-grid { display: grid; grid-template-columns: 1.6fr 1.1fr; gap: 30px; }
 
-        /* AI Input Area */
-        .input-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 30px; }
-        .nlp-group { display: flex; gap: 15px; }
-        .nlp-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; color: white; font-size: 16px; outline: none; min-height: 90px; transition: 0.3s; }
-        .nlp-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        .add-btn { background: var(--accent); border: none; color: white; font-family: 'Syne'; font-weight: 800; padding: 0 30px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        .add-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        /* Glassmorphism */
+        .glass-card { background: var(--card); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 28px; padding: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); transition: 0.4s; }
+        .glass-card:hover { border-color: rgba(255,255,255,0.15); }
 
-        .ai-preview { margin-top: 15px; font-size: 13px; color: var(--accent); font-weight: 500; display: none; }
+        /* Inputs */
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+        input, select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: #fff; outline: none; margin-bottom: 20px; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
 
-        /* Task List */
-        .todo-item { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 18px; margin-bottom: 12px; transition: 0.3s; animation: fadeIn 0.4s ease; }
-        .todo-item:hover { background: #1c1c2b; border-color: #353545; }
-        .todo-item.completed { opacity: 0.4; filter: grayscale(1); }
+        .btn-pro { background: var(--accent); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 10px 20px var(--accent-glow); }
+        .btn-pro:hover { transform: translateY(-3px); box-shadow: 0 15px 30px var(--accent); }
 
-        .checkbox { width: 26px; height: 26px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; transition: 0.2s; display: grid; place-items: center; }
-        .checkbox.checked { background: var(--accent); border-color: var(--accent); }
-        .checkbox.checked::after { content: '✓'; color: white; font-weight: bold; font-size: 14px; }
+        /* Todo Items */
+        .todo-item { display: flex; align-items: center; gap: 20px; padding: 20px; border-bottom: 1px solid var(--border); animation: slideInUp 0.5s ease-out; }
+        .todo-item:last-child { border: none; }
+        .check { width: 28px; height: 28px; border-radius: 10px; border: 2px solid var(--accent); cursor: pointer; display: grid; place-items: center; transition: 0.3s; flex-shrink: 0; }
+        .check.checked { background: var(--accent); }
+        .check.checked::after { content: '✓'; color: #fff; font-weight: bold; }
 
-        .todo-content { flex: 1; }
-        .todo-title { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
-        .todo-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-        .badge { font-size: 10px; padding: 4px 10px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .b-priority-high { background: rgba(255,77,77,0.15); color: var(--high); }
-        .b-priority-medium { background: rgba(255,184,77,0.15); color: var(--med); }
-        .b-cat { background: rgba(124,106,255,0.15); color: var(--accent); }
-        .b-date { background: rgba(255,255,255,0.05); color: var(--muted); }
-        .b-loc { background: rgba(77,255,184,0.15); color: var(--low); }
+        .info { flex: 1; }
+        .title { font-weight: 600; font-size: 17px; margin-bottom: 4px; }
+        .tag { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--muted); margin-right: 5px; }
 
-        .del-btn { color: var(--muted); cursor: pointer; font-size: 18px; transition: 0.2s; padding: 10px; }
-        .del-btn:hover { color: var(--high); }
+        /* Modal Settings */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: none; place-items: center; z-index: 1000; }
 
-        .filter-row { display: flex; gap: 10px; margin-bottom: 20px; }
-        .f-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 8px 18px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .f-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 900px) { .app-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
+    <div class="mesh"></div>
+    <div class="container animate__animated animate__fadeIn">
+        <header>
+            <h1 class="logo">Neural.Todo</h1>
+            <div style="display:flex; gap:10px;">
+                <button onclick="toggleHistory()" class="tag" style="cursor:pointer; padding:10px 20px;">📜 History</button>
+                <button onclick="openSettings()" class="tag" style="cursor:pointer; padding:10px 20px;">⚙️ Settings</button>
+            </div>
+        </header>
 
-<div class="bg-orb orb-1"></div>
-<div class="bg-orb orb-2"></div>
-
-<div class="container">
-    <header>
-        <div class="logo">Smart<span>Todo</span> Pro</div>
-        <button class="f-btn" onclick="clearAll()" style="color: var(--high)">Clear Session</button>
-    </header>
-
-    <div class="stats">
-        <div class="stat-card"> <h3 id="st-active">0</h3> <p>Active</p> </div>
-        <div class="stat-card"> <h3 id="st-done">0</h3> <p>Completed</p> </div>
-        <div class="stat-card"> <h3 id="st-over">0</h3> <p>Overdue</p> </div>
-        <div class="stat-card"> <h3 id="st-total">0</h3> <p>Total</p> </div>
-    </div>
-
-    <div class="input-box">
-        <div class="nlp-group">
-            <textarea id="nlp-input" class="nlp-input" placeholder="e.g. Schedule meeting with CEO at Starbucks tomorrow 2pm and pay Netflix bill today..."></textarea>
-            <button class="add-btn" onclick="processAI()">✦ Add</button>
-        </div>
-        <div id="ai-preview" class="ai-preview">✦ AI detected 2 tasks...</div>
-    </div>
-
-    <div class="filter-row">
-        <button class="f-btn active" id="f-all" onclick="setFilter('all')">All Tasks</button>
-        <button class="f-btn" id="f-active" onclick="setFilter('active')">Pending</button>
-        <button class="f-btn" id="f-done" onclick="setFilter('done')">Completed</button>
-    </div>
-
-    <div id="todo-list"></div>
-</div>
-
-<script>
-    let todos = JSON.parse(localStorage.getItem('pro_todos_v1') || '[]');
-    let currentFilter = 'all';
-
-    function save() {
-        localStorage.setItem('pro_todos_v1', JSON.stringify(todos));
-        render();
-    }
-
-    async function processAI() {
-        const text = document.getElementById('nlp-input').value;
-        if(!text) return;
-        
-        try {
-            const res = await fetch('/api/todos', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text })
-            });
-            const data = await res.json();
-            todos = [...data.todos, ...todos];
-            document.getElementById('nlp-input').value = '';
-            document.getElementById('ai-preview').style.display = 'none';
-            save();
-        } catch(e) { alert("Server not responding. Check app.py"); }
-    }
-
-    function toggle(id) {
-        todos = todos.map(t => t.id === id ? {...t, completed: !t.completed} : t);
-        save();
-    }
-
-    function del(id) {
-        todos = todos.filter(t => t.id !== id);
-        save();
-    }
-
-    function clearAll() { if(confirm('Delete everything?')) { todos = []; save(); } }
-
-    function setFilter(f) {
-        currentFilter = f;
-        document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('f-' + f).classList.add('active');
-        render();
-    }
-
-    function render() {
-        const list = document.getElementById('todo-list');
-        const now = new Date();
-
-        let filtered = todos.filter(t => {
-            if(currentFilter === 'active') return !t.completed;
-            if(currentFilter === 'done') return t.completed;
-            return true;
-        });
-
-        list.innerHTML = filtered.map(t => `
-            <div class="todo-item ${t.completed ? 'completed' : ''}">
-                <div class="checkbox ${t.completed ? 'checked' : ''}" onclick="toggle(${t.id})"></div>
-                <div class="todo-content">
-                    <div class="todo-title">${t.title}</div>
-                    <div class="todo-badges">
-                        <span class="badge b-priority-${t.priority}">${t.priority}</span>
-                        <span class="badge b-cat">${t.category}</span>
-                        ${t.location ? `<span class="badge b-loc">📍 ${t.location}</span>` : ''}
-                        ${t.due_date ? `<span class="badge b-date">📅 ${new Date(t.due_date).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+        <div class="app-grid">
+            <!-- Left: Smart Entry -->
+            <div class="pane">
+                <div class="glass-card animate__animated animate__fadeInLeft" style="margin-bottom: 25px;">
+                    <label>Neural NLP Input</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="ai-input" placeholder="e.g. 'Lunch next Friday afternoon and pay rent day after tomorrow'">
+                        <button onclick="parseAI()" class="btn-pro" style="width:auto; padding:0 25px;">✦</button>
                     </div>
                 </div>
-                <div class="del-btn" onclick="del(${t.id})">✕</div>
+                <div class="glass-card"><div id="todo-list"></div></div>
             </div>
-        `).join('');
 
-        // Stats Update
-        document.getElementById('st-total').innerText = todos.length;
-        document.getElementById('st-active').innerText = todos.filter(t => !t.completed).length;
-        document.getElementById('st-done').innerText = todos.filter(t => t.completed).length;
-        document.getElementById('st-over').innerText = todos.filter(t => t.due_date && new Date(t.due_date) < now && !t.completed).length;
-    }
+            <!-- Right: Event Architect (Manual) -->
+            <div class="pane">
+                <div class="glass-card animate__animated animate__fadeInRight">
+                    <h3 style="margin-bottom:20px; font-family:'Syne'">Event Architect</h3>
+                    <label>Task Title</label>
+                    <input type="text" id="m-title" placeholder="Manual event name">
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <div><label>Date</label><input type="date" id="m-date"></div>
+                        <div><label>Time</label><input type="time" id="m-time"></div>
+                    </div>
+                    
+                    <label>Scenario Category</label>
+                    <select id="m-cat">
+                        <option value="meeting">Meeting / Event</option>
+                        <option value="work">Work Project</option>
+                        <option value="finance">Finance / Bill</option>
+                        <option value="health">Health / Gym</option>
+                    </select>
+                    
+                    <button class="btn-pro" onclick="addManual()">Create Neural Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // AI Preview Logic
-    document.getElementById('nlp-input').addEventListener('input', (e) => {
-        const text = e.target.value;
-        const preview = document.getElementById('ai-preview');
-        if(text.length > 10) {
-            const count = text.split(/and|then|also|[.!?;]/i).filter(s => s.trim().length > 3).length;
-            preview.innerText = `✦ AI will create approx. ${count} tasks...`;
-            preview.style.display = 'block';
-        } else {
-            preview.style.display = 'none';
+    <!-- History Overlay -->
+    <div id="history-overlay" class="overlay" onclick="toggleHistory()">
+        <div class="glass-card" style="width:400px;" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom:20px;">Archived Tasks</h3>
+            <div id="history-list"></div>
+            <button class="btn-pro" style="margin-top:20px;" onclick="toggleHistory()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let todos = JSON.parse(localStorage.getItem('nt_active') || '[]');
+        let history = JSON.parse(localStorage.getItem('nt_history') || '[]');
+
+        function save() {
+            localStorage.setItem('nt_active', JSON.stringify(todos));
+            localStorage.setItem('nt_history', JSON.stringify(history));
+            render();
         }
-    });
 
-    document.addEventListener('DOMContentLoaded', render);
-</script>
+        async function parseAI() {
+            const input = document.getElementById('ai-input');
+            const res = await fetch('/api/parse', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: input.value})
+            });
+            const tasks = await res.json();
+            todos = [...tasks, ...todos];
+            input.value = '';
+            if(window.navigator.vibrate) window.navigator.vibrate(60);
+            save();
+        }
+
+        function addManual() {
+            const title = document.getElementById('m-title').value;
+            if(!title) return;
+            const date = document.getElementById('m-date').value;
+            const time = document.getElementById('m-time').value;
+
+            const task = {
+                id: Date.now(),
+                title: title,
+                due_date: date && time ? `${date}T${time}` : null,
+                category: document.getElementById('m-cat').value,
+                completed: false
+            };
+            todos.unshift(task);
+            save();
+        }
+
+        function completeTask(id) {
+            const task = todos.find(t => t.id === id);
+            history.unshift(task);
+            todos = todos.filter(t => t.id !== id);
+            if(window.navigator.vibrate) window.navigator.vibrate([40, 30, 40]);
+            save();
+        }
+
+        function toggleHistory() {
+            const overlay = document.getElementById('history-overlay');
+            overlay.style.display = overlay.style.display === 'grid' ? 'none' : 'grid';
+            renderHistory();
+        }
+
+        // Notification Engine
+        setInterval(() => {
+            const now = new Date().getTime();
+            todos.forEach(t => {
+                if(t.due_date && !t.reminded) {
+                    const taskTime = new Date(t.due_date).getTime();
+                    if(taskTime - now < 60000 && taskTime > now) {
+                        new Notification(`Neural Reminder: ${t.title}`);
+                        t.reminded = true;
+                    }
+                }
+            });
+        }, 20000);
+
+        function render() {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = todos.length === 0 ? '<p style="color:var(--muted); text-align:center;">No neural tasks.</p>' :
+            todos.map(t => `
+                <div class="todo-item">
+                    <div class="check" onclick="completeTask(${t.id})"></div>
+                    <div class="info">
+                        <div class="title">${t.title}</div>
+                        <span class="tag">${t.category}</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.02)">📅 ${t.due_date ? new Date(t.due_date).toLocaleString() : 'No Time'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHistory() {
+            const hl = document.getElementById('history-list');
+            hl.innerHTML = history.map(t => `<div class="todo-item"><div class="info">${t.title}</div></div>`).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+            if(Notification.permission !== 'granted') Notification.requestPermission();
+        });
+    </script>
 </body>
 </html>
