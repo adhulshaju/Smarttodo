@@ -1,102 +1,79 @@
 from flask import Flask, render_template, request, jsonify
 import os
-import json
 import re
 from datetime import datetime, timedelta
 from dateutil import parser as dateparser
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'smarttodo-secret-2024')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'smarttodo-ultra-pro-2024')
 
-# ── NLP Parser Logic (No Database) ──────────────────────────────────────────
+# ── ADVANCED LEXICON ────────────────────────────────────────────────────────
 
-PRIORITY_WORDS = {
-    'high':   ['urgent', 'asap', 'immediately', 'critical', 'important', 'priority', 'emergency', 'must'],
-    'low':    ['sometime', 'whenever', 'eventually', 'maybe', 'if possible', 'optional', 'low priority'],
+# Categories with weighted intent
+INTENTS = {
+    'meeting':  ['call', 'zoom', 'meet', 'interview', 'sync', 'discuss', 'appointment', 'session'],
+    'shopping': ['buy', 'get', 'purchase', 'pick up', 'order', 'grocery', 'target', 'amazon'],
+    'finance':  ['pay', 'bill', 'rent', 'invoice', 'transfer', 'tax', 'subscription', 'cost'],
+    'health':   ['gym', 'workout', 'doctor', 'dentist', 'medicine', 'run', 'yoga', 'exercise'],
+    'work':     ['submit', 'email', 'report', 'presentation', 'deadline', 'client', 'review'],
 }
 
-CATEGORY_KEYWORDS = {
-    'meeting':  ['meeting', 'meet', 'conference', 'call', 'zoom', 'teams', 'standup', 'sync', 'interview', 'appointment'],
-    'shopping': ['buy', 'purchase', 'shop', 'order', 'get', 'pick up', 'grocery', 'store'],
-    'health':   ['doctor', 'hospital', 'gym', 'workout', 'medicine', 'dentist', 'clinic', 'exercise', 'run', 'yoga'],
-    'work':     ['report', 'presentation', 'deadline', 'project', 'task', 'submit', 'review', 'email', 'office'],
-    'travel':   ['flight', 'train', 'travel', 'trip', 'hotel', 'booking', 'airport', 'drive', 'bus'],
-    'personal': ['birthday', 'anniversary', 'party', 'dinner', 'lunch', 'breakfast', 'family', 'friend'],
-    'finance':  ['pay', 'bill', 'invoice', 'bank', 'transfer', 'tax', 'insurance', 'payment'],
-    'learning': ['study', 'learn', 'read', 'course', 'class', 'practice', 'tutorial', 'book'],
-}
+# ── STRONGER NLP LOGIC ───────────────────────────────────────────────────────
 
-LOCATION_PATTERNS = [
-    r'\bat\s+(?:the\s+)?([A-Z][a-zA-Z\s,]+?)(?:\s+on|\s+at|\s+by|\.|,|$)',
-    r'\bin\s+(?:the\s+)?([A-Z][a-zA-Z\s,]+?)(?:\s+on|\s+at|\s+by|\.|,|$)',
-    r'@\s*([A-Za-z0-9\s]+)',
-]
+def clean_text(text):
+    # Remove filler words that confuse parsers
+    fillers = ['i need to', 'remind me to', 'i want to', 'please', 'can you']
+    t = text.lower()
+    for f in fillers:
+        t = t.replace(f, '')
+    return t.strip()
 
-RELATIVE_DATE_MAP = {
-    'today': 0, 'tonight': 0, 'tomorrow': 1, 'day after tomorrow': 2,
-    'next week': 7, 'next month': 30, 'this weekend': 5,
-}
-
-WEEKDAY_MAP = {'monday':0,'tuesday':1,'wednesday':2,'thursday':3,'friday':4,'saturday':5,'sunday':6}
-TIME_PATTERN = r'\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|AM|PM)?\b'
-
-def detect_priority(text):
+def extract_entities(text):
+    # Detect Location (Words following 'at', 'in', 'near')
+    loc_match = re.search(r'\b(?:at|in|near|@)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)', text)
+    location = loc_match.group(1) if loc_match else ""
+    
+    # Detect Category based on intent keywords
+    category = 'general'
+    max_score = 0
     tl = text.lower()
-    for p, words in PRIORITY_WORDS.items():
-        if any(w in tl for w in words): return p
-    return 'medium'
+    for cat, keywords in INTENTS.items():
+        score = sum(2 if kw in tl else 0 for kw in keywords)
+        if score > max_score:
+            max_score = score
+            category = cat
+            
+    return category, location
 
-def detect_category(text):
-    tl = text.lower()
-    scores = {cat: sum(1 for kw in kws if kw in tl) for cat, kws in CATEGORY_KEYWORDS.items()}
-    best = max(scores, key=scores.get)
-    return best if scores[best] > 0 else 'general'
-
-def extract_datetime(text):
+def parse_advanced_date(text):
     now = datetime.now()
     tl = text.lower()
-    for phrase, days in RELATIVE_DATE_MAP.items():
-        if phrase in tl: return _apply_time(now + timedelta(days=days), text)
-    for day, wd in WEEKDAY_MAP.items():
-        if day in tl:
-            diff = (wd - now.weekday()) % 7
-            if diff == 0: diff = 7
-            return _apply_time(now + timedelta(days=diff), text)
+    
+    # Hand-coded overrides for tricky relative dates
+    if 'tonight' in tl:
+        return now.replace(hour=20, minute=0, second=0)
+    if 'morning' in tl:
+        return now.replace(hour=9, minute=0, second=0) + (timedelta(days=1) if 'tomorrow' in tl else timedelta(0))
+    
     try:
+        # dateutil fuzzy handles: "Next Friday", "In 3 days", "May 5th"
         dt = dateparser.parse(text, default=now, fuzzy=True)
-        if dt and dt != now: return dt
-    except: pass
+        # Verify it's actually a detected date and not just 'now'
+        if dt.replace(microsecond=0) != now.replace(microsecond=0):
+            return dt
+    except:
+        pass
     return None
 
-def _apply_time(base, text):
-    m = re.search(TIME_PATTERN, text, re.IGNORECASE)
-    if m:
-        h = int(m.group(1))
-        mins = int(m.group(2)) if m.group(2) else 0
-        ampm = (m.group(3) or '').lower()
-        if ampm == 'pm' and h < 12: h += 12
-        if ampm == 'am' and h == 12: h = 0
-        return base.replace(hour=h, minute=mins, second=0, microsecond=0)
-    return base.replace(hour=9, minute=0, second=0, microsecond=0)
+def split_smart(text):
+    # Splits on punctuation AND logical conjunctions (and, then, also) 
+    # but ONLY if followed by a verb-like word
+    logic_split = r'\s+(?:and|then|also|plus)\s+(?=[a-z]{3,})'
+    punct_split = r'[.!?;]\s+'
+    chunks = re.split(f'{logic_split}|{punct_split}', text, flags=re.IGNORECASE)
+    return [c.strip() for c in chunks if len(c.strip()) > 4]
 
-def split_into_todos(paragraph):
-    chunks = re.split(r'(?<=[.!?])\s+|(?:\s*[,;]\s*(?:and|also|then|after that)\s*)', paragraph)
-    return [s.strip() for s in chunks if len(s.strip()) > 3]
-
-def parse_todo(text):
-    chunks = split_into_todos(text)
-    results = []
-    for chunk in chunks:
-        results.append({
-            'title': chunk[:200],
-            'priority': detect_priority(chunk),
-            'category': detect_category(chunk),
-            'due_date': extract_datetime(chunk),
-            'location': '', # Simplified for now
-        })
-    return results
-
-# ── Routes ───────────────────────────────────────────────────────────────────
+# ── ROUTES ───────────────────────────────────────────────────────────────────
 
 @app.route('/')
 def index():
@@ -105,43 +82,31 @@ def index():
 @app.route('/api/todos', methods=['POST'])
 def create_todos():
     data = request.get_json()
-    text = data.get('text', '').strip()
-    source = data.get('source', 'nlp')
+    raw_text = data.get('text', '').strip()
+    if not raw_text: return jsonify({'error': 'No text'}), 400
 
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
+    chunks = split_smart(raw_text)
+    final_tasks = []
+    base_id = int(datetime.utcnow().timestamp() * 1000)
 
-    if source == 'manual':
-        parsed = [{
-            'title': data.get('title', text),
-            'priority': data.get('priority', 'medium'),
-            'category': data.get('category', 'general'),
-            'due_date': dateparser.parse(data['due_date']) if data.get('due_date') else None,
-            'location': data.get('location', ''),
-            'description': data.get('description', '')
-        }]
-    else:
-        parsed = parse_todo(text)
-
-    # Transform for Frontend (Serializing Datetime)
-    timestamp = int(datetime.utcnow().timestamp() * 1000)
-    final_todos = []
-    for i, p in enumerate(parsed):
-        final_todos.append({
-            'id': timestamp + i,
-            'title': p['title'],
-            'priority': p['priority'],
-            'category': p['category'],
-            'due_date': p['due_date'].isoformat() if p['due_date'] else None,
-            'location': p.get('location', ''),
-            'description': p.get('description', ''),
+    for i, chunk in enumerate(chunks):
+        cleaned = clean_text(chunk)
+        cat, loc = extract_entities(chunk) # Use original chunk for Proper Noun detection
+        due = parse_advanced_date(chunk)
+        
+        final_tasks.append({
+            'id': base_id + i,
+            'title': cleaned.capitalize(),
+            'priority': 'high' if any(x in chunk.lower() for x in ['urgent', 'asap', '!']) else 'medium',
+            'category': cat,
+            'location': loc,
+            'due_date': due.isoformat() if due else None,
             'completed': False,
             'created_at': datetime.utcnow().isoformat(),
-            'source': source
+            'source': 'nlp'
         })
 
-    return jsonify({'todos': final_todos, 'count': len(final_todos)}), 201
+    return jsonify({'todos': final_tasks}), 200
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
